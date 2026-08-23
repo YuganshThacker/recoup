@@ -30,11 +30,24 @@ proves whether that action recovered **incremental** revenue.
 ```bash
 python -m recovery.batch                     # rules only
 python -m recovery.batch --agent scripted    # exercises the agent loop, no spend
-python -m recovery.batch --agent live        # real model calls; needs the `agent` extra
+
+# live run, OpenAI (default provider)
+pip install -e ".[openai]"
+export OPENAI_API_KEY=sk-...
+python -m recovery.batch --agent live --model gpt-5-mini --token-budget 2000000
+
+# live run, Anthropic
+pip install -e ".[anthropic]"
+python -m recovery.batch --agent live --provider anthropic
 ```
 
-`--agent off` and `--agent scripted` need no dependencies at all. `--agent live` needs
-`pip install -e ".[agent]"` and credentials.
+`--agent off` and `--agent scripted` need no dependencies at all. Provider SDKs import
+lazily inside their adapters, so only the one you actually use has to be installed.
+
+`--token-budget` stops calling the model after roughly that many tokens and falls back
+to the rules path, so a run cannot quietly burn through a daily allowance. It is checked
+before each call against tokens already spent, so it can overshoot by one call — set it
+below a hard quota rather than at it.
 
 ## Pre-registration
 

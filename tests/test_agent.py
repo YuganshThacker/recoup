@@ -13,7 +13,12 @@ from typing import Any
 
 import pytest
 
-from recovery.agent.client import ModelReply, ScriptedClient, UnavailableClient, _cost_micros
+from recovery.agent.client import (
+    BudgetedClient,
+    ModelReply,
+    ScriptedClient,
+    UnavailableClient,
+)
 from recovery.agent.planner import AgentPlanner, build_prompt
 from recovery.agent.router import AgentTailArms, DeterministicArms
 from recovery.agent.schema import (
@@ -126,6 +131,24 @@ def test_an_injected_amount_is_ignored_rather_than_honoured() -> None:
     assert not hasattr(proposal, "amount")
     assert not hasattr(proposal, "message")
     assert proposal.template_id == "RP_PREDEBIT_01"
+
+
+def test_schema_is_valid_under_strict_mode_rules() -> None:
+    # Strict structured-output modes require every property listed in `required`
+    # and additionalProperties disabled. A schema rejected at the API boundary
+    # would silently lose the constraint it exists to provide.
+    schema = proposal_schema(sorted(REGISTERED))
+    assert set(schema["required"]) == set(schema["properties"])
+    assert schema["additionalProperties"] is False
+
+
+def test_nullable_template_id_uses_anyof_not_a_null_bearing_enum() -> None:
+    # A union type whose enum also contains null is ambiguous under some strict
+    # modes; anyOf is unambiguous everywhere.
+    field = proposal_schema(sorted(REGISTERED))["properties"]["template_id"]
+    assert "anyOf" in field
+    assert {"type": "null"} in field["anyOf"]
+    assert "enum" not in field
 
 
 def test_every_proposable_action_is_a_real_action_kind() -> None:
@@ -273,24 +296,51 @@ def test_prompt_never_asks_the_model_for_an_amount() -> None:
 # --- cost accounting -------------------------------------------------------
 
 
-def test_cost_is_integer_micros_from_reported_usage() -> None:
-    class Usage:
-        input_tokens = 1000
-        output_tokens = 100
-
-    # $5/1M input + $25/1M output, in micro-dollars: 1000*5 + 100*25.
-    assert _cost_micros(Usage()) == 7500
-
-
-def test_missing_usage_costs_nothing_rather_than_crashing() -> None:
-    assert _cost_micros(None) == 0
-
-
 def test_model_reply_failure_is_free() -> None:
     reply = ModelReply.failure("boom", model="m", latency_ms=5)
     assert not reply.ok
     assert reply.cost_micros == 0
+    assert reply.total_tokens == 0
     assert reply.payload is None
+
+
+def test_budgeted_client_stops_calling_once_the_ceiling_is_hit() -> None:
+    # A daily free-token allowance is a real constraint. Exhausting it must drop
+    # the planner onto its rules floor, not fail the batch. The ceiling is
+    # checked before a call against tokens already spent, so it overshoots by at
+    # most one call -- asserted here rather than left as a surprise.
+    inner = ScriptedClient([NOTICE])
+    budgeted = BudgetedClient(inner, max_total_tokens=400)
+    kwargs = {"system": "s", "prompt": "p", "schema": {}}
+
+    first = budgeted.propose(**kwargs)
+    assert first.ok
+    assert budgeted.tokens_used == 420  # 300 in + 120 out, overshooting 400
+
+    second = budgeted.propose(**kwargs)
+    assert not second.ok
+    assert second.error == "token_budget_exhausted"
+    assert inner.calls == 1  # the second never reached the provider
+    assert budgeted.refused_for_budget == 1
+
+
+def test_budget_exhaustion_falls_back_to_rules() -> None:
+    case = make_case()
+    budgeted = BudgetedClient(ScriptedClient([NOTICE]), max_total_tokens=0)
+    planner = AgentPlanner(budgeted, DeclineConditionalPlanner())
+    plan = planner.next_step(case, make_facts(case))
+    assert isinstance(plan, PlannedStep)
+    assert plan.action.proposed_by.value == "rules"
+    assert planner.telemetry.fallbacks == 1
+
+
+def test_telemetry_tracks_tokens_not_only_cost() -> None:
+    case = make_case()
+    planner = AgentPlanner(ScriptedClient([NOTICE]), DeclineConditionalPlanner())
+    planner.next_step(case, make_facts(case))
+    assert planner.telemetry.input_tokens == 300
+    assert planner.telemetry.output_tokens == 120
+    assert planner.telemetry.total_tokens == 420
 
 
 # --- routing: keeping R2 honest --------------------------------------------

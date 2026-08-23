@@ -24,7 +24,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import timedelta
 
-from recovery.agent.client import LLMClient
+from recovery.agent.client import LLMClient, ModelReply
 from recovery.agent.schema import AgentProposal, InvalidProposal, proposal_schema, validate
 from recovery.domain.case import RecoveryCase, StopReason
 from recovery.domain.events import Actor
@@ -69,6 +69,8 @@ class AgentTelemetry:
     """Per-run model usage, so the ablation can price the model honestly."""
 
     calls: int = 0
+    input_tokens: int = 0
+    output_tokens: int = 0
     cost_micros: int = 0
     latency_ms: int = 0
     replans: int = 0
@@ -76,10 +78,16 @@ class AgentTelemetry:
     invalid_proposals: int = 0
     errors: list[str] = field(default_factory=list)
 
-    def record(self, *, cost_micros: int, latency_ms: int) -> None:
+    def record(self, reply: ModelReply) -> None:
         self.calls += 1
-        self.cost_micros += cost_micros
-        self.latency_ms += latency_ms
+        self.input_tokens += reply.input_tokens
+        self.output_tokens += reply.output_tokens
+        self.cost_micros += reply.cost_micros
+        self.latency_ms += reply.latency_ms
+
+    @property
+    def total_tokens(self) -> int:
+        return self.input_tokens + self.output_tokens
 
 
 def _describe_refusal(decision: Decision) -> str:
@@ -189,7 +197,7 @@ class AgentPlanner:
                 prompt=build_prompt(case, facts, refusals),
                 schema=schema,
             )
-            self.telemetry.record(cost_micros=reply.cost_micros, latency_ms=reply.latency_ms)
+            self.telemetry.record(reply)
 
             if not reply.ok or reply.payload is None:
                 self.telemetry.errors.append(reply.error or "unknown")

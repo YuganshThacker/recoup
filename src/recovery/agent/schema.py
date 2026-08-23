@@ -88,9 +88,15 @@ def proposal_schema(template_ids: list[str]) -> dict[str, Any]:
                 "enum": [c.value for c in PROPOSABLE_CHANNELS],
                 "description": "Delivery channel; 'none' for actions that send nothing.",
             },
+            # anyOf rather than a nullable type carrying null inside its enum.
+            # Both forms are defensible, but only this one is unambiguous under
+            # every provider's strict-schema mode, and a schema that is rejected
+            # at the API boundary loses the guarantee it exists to provide.
             "template_id": {
-                "type": ["string", "null"],
-                "enum": [*template_ids, None],
+                "anyOf": [
+                    {"type": "string", "enum": list(template_ids)},
+                    {"type": "null"},
+                ],
                 "description": "A registered template id, or null when no message is sent.",
             },
             "delay_hours": {

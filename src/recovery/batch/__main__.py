@@ -16,9 +16,10 @@ no model in the loop to ablate. Reported separately, never blended.
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 from typing import Any
 
-from recovery.agent.client import AnthropicClient, ScriptedClient
+from recovery.agent.client import BudgetedClient, ScriptedClient
 from recovery.agent.planner import AgentPlanner
 from recovery.agent.router import AgentTailArms, DeterministicArms
 from recovery.batch.metrics import (
@@ -59,23 +60,40 @@ _SCRIPTED_PROPOSALS = [
 ]
 
 
-def _build_client(mode: str) -> Any | None:
-    if mode == "scripted":
+def _build_client(args: argparse.Namespace) -> Any | None:
+    """Construct the model client for the requested mode and provider.
+
+    Provider SDKs import inside their adapters, so nothing is required unless a
+    live run is actually asked for.
+    """
+    if args.agent == "scripted":
         return ScriptedClient(_SCRIPTED_PROPOSALS)
-    if mode == "live":
-        return AnthropicClient()
-    return None
+    if args.agent != "live":
+        return None
+
+    if args.provider == "openai":
+        from recovery.agent.openai_client import DEFAULT_MODEL, OpenAIClient
+
+        client: Any = OpenAIClient(model=args.model or DEFAULT_MODEL)
+    else:
+        from recovery.agent.anthropic_client import DEFAULT_MODEL, AnthropicClient
+
+        client = AnthropicClient(model=args.model or DEFAULT_MODEL)
+
+    if args.token_budget > 0:
+        return BudgetedClient(client, max_total_tokens=args.token_budget)
+    return client
 
 
-def _build_router(mode: str, seed: int) -> Any:
+def _build_router(args: argparse.Namespace) -> Any:
     """Assemble the arm router for the requested agent mode."""
     rules = DeclineConditionalPlanner()
     control = PlatformDefaultPlanner()
-    client = _build_client(mode)
+    client = _build_client(args)
     if client is None:
         return DeterministicArms(treatment=rules, control=control)
     agent = AgentPlanner(client=client, fallback=rules)
-    return AgentTailArms(rules=rules, control=control, agent=agent, seed=seed)
+    return AgentTailArms(rules=rules, control=control, agent=agent, seed=args.seed)
 
 
 def _report_ablation(
@@ -107,16 +125,33 @@ def _report_ablation(
 
 
 def _report_model_usage(router: Any) -> None:
-    """Model spend, so the ablation can be priced rather than asserted."""
-    telemetry = getattr(getattr(router, "_agent", None), "telemetry", None)
+    """Model usage, in tokens first.
+
+    Tokens lead because that is what a free daily allowance meters; price is
+    reported only where the provider's rates are known, and its absence is
+    stated rather than shown as zero.
+    """
+    agent = getattr(router, "_agent", None)
+    telemetry = getattr(agent, "telemetry", None)
     if telemetry is None or not telemetry.calls:
         return
     print("\n  model usage:")
     print(f"    calls              {telemetry.calls}")
-    print(f"    cost               ${telemetry.cost_micros / 1_000_000:.4f}")
+    print(
+        f"    tokens             {telemetry.total_tokens:,} "
+        f"({telemetry.input_tokens:,} in / {telemetry.output_tokens:,} out)"
+    )
+    if telemetry.cost_micros:
+        print(f"    cost               ${telemetry.cost_micros / 1_000_000:.4f}")
+    else:
+        print("    cost               unpriced for this model; read tokens above")
+    print(f"    mean latency       {telemetry.latency_ms // max(telemetry.calls, 1)} ms")
     print(f"    re-plans           {telemetry.replans}")
     print(f"    fallbacks          {telemetry.fallbacks}")
     print(f"    invalid proposals  {telemetry.invalid_proposals}")
+    if telemetry.errors:
+        top = Counter(e.split(":")[0] for e in telemetry.errors).most_common(5)
+        print(f"    error kinds        {dict(top)}")
 
 
 def main() -> None:
@@ -130,10 +165,28 @@ def main() -> None:
         default="off",
         help="off: rules only. scripted: canned proposals, no spend. live: real model calls.",
     )
+    parser.add_argument(
+        "--provider",
+        choices=("openai", "anthropic"),
+        default="openai",
+        help="Which model provider to use when --agent live.",
+    )
+    parser.add_argument(
+        "--model", default=None, help="Model id; defaults to the provider's default."
+    )
+    parser.add_argument(
+        "--token-budget",
+        type=int,
+        default=0,
+        help=(
+            "Stop calling the model after roughly this many tokens and fall back to "
+            "rules. 0 disables. Set below a hard daily quota, not at it."
+        ),
+    )
     args = parser.parse_args()
 
     population = generate(name="population", size=args.population, seed=args.seed)
-    pop_outcomes, pop_provider, _ = run_batch(population, _build_router(args.agent, args.seed))
+    pop_outcomes, pop_provider, _ = run_batch(population, _build_router(args))
     print(summarise(pop_outcomes, label=f"BATCH A - population (seed {args.seed})"))
     print(
         f"\n  provider calls: {pop_provider.charge_calls} charges, "
@@ -142,7 +195,7 @@ def main() -> None:
     print(f"  message spend:  {format_inr(pop_provider.total_message_cost)}")
 
     enriched = generate(name="tail_enriched", size=args.tail, seed=args.seed + 1, enriched=True)
-    tail_router = _build_router(args.agent, args.seed)
+    tail_router = _build_router(args)
     tail_outcomes, _, _ = run_batch(enriched, tail_router)
 
     suffix = (
