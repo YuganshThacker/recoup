@@ -35,6 +35,7 @@ from recovery.domain.case import RecoveryCase, StopReason
 from recovery.domain.failure import DeclineClass
 from recovery.policy import constants as K
 from recovery.policy.actions import ActionKind, Channel, ProposedAction
+from recovery.templates import bind_variables
 
 NOTICE_TEMPLATE = "RP_PREDEBIT_01"
 REMINDER_TEMPLATE = "RP_DUNNING_01"
@@ -79,6 +80,14 @@ class PlannerFacts:
     instrument_repair_requested: bool
     instrument_repaired: bool
 
+    policy_context: object | None = None
+    """The gate context, so a planner may pre-check its own proposal.
+
+    The deterministic planners ignore this -- they are written to stay inside
+    the envelope. The agent planner uses it to gate a proposal before returning
+    it, which is what lets a refusal be fed back for re-planning instead of
+    surfacing as a dead end in the runner."""
+
 
 def _notice(at: datetime, rationale: str) -> PlannedStep:
     return PlannedStep(
@@ -86,13 +95,7 @@ def _notice(at: datetime, rationale: str) -> PlannedStep:
             kind=ActionKind.SEND_PREDEBIT_NOTICE,
             channel=Channel.SMS,
             template_id=NOTICE_TEMPLATE,
-            variables={
-                "merchant": "merchant",
-                "amount": "amount",
-                "debit_at": "debit_at",
-                "mandate_ref": "mandate_ref",
-                "reason": "reason",
-            },
+            variables=bind_variables(NOTICE_TEMPLATE),
             rationale=rationale,
         ),
         at=at,
@@ -114,7 +117,7 @@ def _repair_request(at: datetime, rationale: str) -> PlannedStep:
             kind=ActionKind.REQUEST_INSTRUMENT_UPDATE,
             channel=Channel.SMS,
             template_id=REPAIR_TEMPLATE,
-            variables={"merchant": "merchant", "amount": "amount", "update_link": "update_link"},
+            variables=bind_variables(REPAIR_TEMPLATE),
             rationale=rationale,
         ),
         at=at,

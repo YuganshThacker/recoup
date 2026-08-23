@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from decimal import Decimal
 
 import pytest
@@ -209,7 +210,7 @@ def test_ledger_rejects_non_monotonic_seq() -> None:
         event_id="e1",
         case_id="case_1",
         seq=7,
-        occurred_at=__import__("datetime").datetime.now(__import__("datetime").UTC),
+        occurred_at=datetime.now(UTC),
         kind=EventKind.CASE_DETECTED,
         actor=Actor.WEBHOOK,
         summary="out of order",

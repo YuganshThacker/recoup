@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
+from recovery.agent.router import DeterministicArms
 from recovery.batch.metrics import (
     Lift,
     Proportion,
@@ -35,7 +36,8 @@ NOW = datetime(2026, 9, 10, 6, 0, tzinfo=UTC)
 def _run(size: int = 600, seed: int = 7, enriched: bool = False):
     batch = generate(name="t", size=size, seed=seed, enriched=enriched)
     outcomes, provider, ledger = run_batch(
-        batch, DeclineConditionalPlanner(), PlatformDefaultPlanner()
+        batch,
+        DeterministicArms(treatment=DeclineConditionalPlanner(), control=PlatformDefaultPlanner()),
     )
     return batch, outcomes, provider, ledger
 
@@ -196,7 +198,10 @@ def test_incremental_is_never_greater_than_gross() -> None:
 def test_incremental_is_zero_when_the_agent_does_not_help() -> None:
     # Same planner in both arms: no lift, so no incremental money.
     batch = generate(name="null", size=800, seed=31)
-    outcomes, _, _ = run_batch(batch, PlatformDefaultPlanner(), PlatformDefaultPlanner())
+    outcomes, _, _ = run_batch(
+        batch,
+        DeterministicArms(treatment=PlatformDefaultPlanner(), control=PlatformDefaultPlanner()),
+    )
     lift = recovery_lift(outcomes)
     assert abs(lift.value) < 0.08
     if lift.value <= 0:

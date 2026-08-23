@@ -15,12 +15,26 @@ proves whether that action recovered **incremental** revenue.
 ## Design commitments
 
 - **Deterministic control, probabilistic core.** A policy engine gates every money action.
-  The LLM proposes; it never executes and never emits an amount.
-- **Compliance is code, not prose.** Eight gates — consent, quiet hours, DLT template,
-  channel economics, attempt budget, e-mandate notice/AFA, suppression, cooldown — each
-  able to refuse an action and log why.
-- **Honest measurement.** Randomised holdout for the system, randomised split *within the
-  tail* for the model. Incremental ₹, with confidence intervals.
+  The model proposes; it never executes, never emits an amount, and never writes copy —
+  its output schema has no field for either.
+- **Compliance is code, not prose.** Eight gates — consent, suppression, e-mandate
+  notice/AFA, attempt budget, quiet hours, cooldown, DLT template, channel economics —
+  each able to refuse an action and say why. Refusals are structured, so the agent
+  re-plans against them instead of stalling.
+- **Honest measurement.** Randomised holdout for the system (R1), randomised split
+  *within the tail* for the model (R2). Incremental ₹, with confidence intervals, and a
+  self-cure baseline both arms share.
+
+## Running it
+
+```bash
+python -m recovery.batch                     # rules only
+python -m recovery.batch --agent scripted    # exercises the agent loop, no spend
+python -m recovery.batch --agent live        # real model calls; needs the `agent` extra
+```
+
+`--agent off` and `--agent scripted` need no dependencies at all. `--agent live` needs
+`pip install -e ".[agent]"` and credentials.
 
 ## Pre-registration
 

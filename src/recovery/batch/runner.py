@@ -24,11 +24,20 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from typing import Protocol
 
-from recovery.domain.case import CaseState, ExperimentArm, StopReason, TailSubtype
+from recovery.domain.case import (
+    CaseState,
+    ExperimentArm,
+    RecoveryCase,
+    StopReason,
+    TailArm,
+    TailSubtype,
+)
 from recovery.domain.events import Actor, EventKind, InMemoryLedger, Ledger
 from recovery.domain.failure import DeclineClass
 from recovery.domain.money import Paise, paise
+from recovery.planner.base import Planner
 from recovery.planner.rules import PlannedStep, PlannerFacts, StopPlan
 from recovery.policy.actions import ActionKind, Channel
 from recovery.policy.decision import Decision, RefusalCode
@@ -82,6 +91,7 @@ class CaseOutcome:
     stop_reason: StopReason | None
     hours_to_recovery: float | None
     tail_subtype: TailSubtype | None
+    tail_arm: TailArm | None
     refusal_codes: tuple[str, ...]
 
     @property
@@ -150,7 +160,7 @@ def _self_cured(sim: SimCase, now: datetime) -> bool:
 
 def run_case(
     sim: SimCase,
-    planner: object,
+    planner: Planner,
     provider: SimulatedProvider,
     engine: PolicyEngine,
     ledger: Ledger,
@@ -160,7 +170,8 @@ def run_case(
     case = sim.case
     closes_at = case.observation_closes_at or (sim.failed_at + timedelta(days=21))
     state = _RunState(now=sim.failed_at, closes_at=closes_at)
-    case.tail_subtype = _tail_subtype(sim, high_value_floor)
+    if case.tail_subtype is None:
+        case.tail_subtype = _tail_subtype(sim, high_value_floor)
 
     ledger.record(
         case.case_id,
@@ -181,7 +192,7 @@ def run_case(
         if _self_cured(sim, state.now):
             return _finish(sim, state, "organic", ledger)
 
-        plan = planner.next_step(case, _facts(sim, state))  # type: ignore[attr-defined]
+        plan = planner.next_step(case, _facts(sim, state))
         if isinstance(plan, StopPlan):
             return _stop(sim, state, plan.reason, ledger)
 
@@ -205,6 +216,7 @@ def _facts(sim: SimCase, state: _RunState) -> PlannerFacts:
         downtime_active=_downtime_active(sim, state.now),
         instrument_repair_requested=state.repair_requested,
         instrument_repaired=state.repaired,
+        policy_context=_context(sim, state),
     )
 
 
@@ -407,16 +419,26 @@ def _outcome(
         stop_reason=stop_reason,
         hours_to_recovery=round(hours, 2) if hours is not None else None,
         tail_subtype=case.tail_subtype,
+        tail_arm=case.tail_arm,
         refusal_codes=tuple(state.refusals),
     )
 
 
+class ArmRouter(Protocol):
+    """Selects the planner for a case. See :mod:`recovery.agent.router`."""
+
+    def planner_for(self, case: RecoveryCase) -> Planner: ...
+
+
 def run_batch(
-    batch: Batch,
-    treatment_planner: object,
-    control_planner: object,
+    batch: Batch, router: ArmRouter
 ) -> tuple[list[CaseOutcome], SimulatedProvider, Ledger]:
-    """Run every case in a batch through the arm it was assigned."""
+    """Run every case in a batch through the planner its router selects.
+
+    The router owns arm assignment, so the runner stays ignorant of which
+    experiment a case belongs to -- it just drives whatever planner it is
+    handed. See :mod:`recovery.agent.router`.
+    """
     provider = SimulatedProvider(truths={c.case.case_id: c.truth for c in batch.cases})
     ledger = Ledger(InMemoryLedger())
     engine = PolicyEngine()
@@ -424,15 +446,10 @@ def run_batch(
     amounts = sorted(int(c.case.amount) for c in batch.cases)
     high_value_floor = amounts[int(len(amounts) * 0.9)] if amounts else 0
 
-    outcomes = [
-        run_case(
-            sim,
-            treatment_planner if sim.case.arm is ExperimentArm.TREATMENT else control_planner,
-            provider,
-            engine,
-            ledger,
-            high_value_floor,
-        )
-        for sim in batch.cases
-    ]
+    outcomes = []
+    for sim in batch.cases:
+        # Tail eligibility is known before routing, so the router can see it.
+        sim.case.tail_subtype = _tail_subtype(sim, high_value_floor)
+        planner = router.planner_for(sim.case)
+        outcomes.append(run_case(sim, planner, provider, engine, ledger, high_value_floor))
     return outcomes, provider, ledger

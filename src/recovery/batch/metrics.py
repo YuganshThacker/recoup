@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 from recovery.batch.runner import CaseOutcome
-from recovery.domain.case import ExperimentArm, TailSubtype
+from recovery.domain.case import ExperimentArm, TailArm, TailSubtype
 from recovery.domain.money import Paise, format_inr, paise
 
 Z_95 = 1.959963985
@@ -163,6 +163,36 @@ def tail_lift_by_subtype(outcomes: list[CaseOutcome]) -> dict[str, Lift]:
     return result
 
 
+def ablation_by_subtype(outcomes: list[CaseOutcome]) -> dict[str, Lift]:
+    """SECONDARY: the R2 ablation -- agent loop against deterministic fallback.
+
+    Split on ``tail_arm``, not on the experiment arm. Both halves sit inside R1's
+    treatment arm and were routed to the tail for the same reasons, so this is a
+    comparison of like with like; comparing agent-handled cases against the
+    general population would measure the router instead of the model.
+    """
+    result: dict[str, Lift] = {}
+    for subtype in TailSubtype:
+        rows = [o for o in outcomes if o.tail_subtype is subtype and o.tail_arm is not None]
+        if rows:
+            result[subtype.value] = Lift(
+                treatment=_proportion([o for o in rows if o.tail_arm is TailArm.AGENT_LOOP]),
+                control=_proportion(
+                    [o for o in rows if o.tail_arm is TailArm.DETERMINISTIC_FALLBACK]
+                ),
+            )
+    return result
+
+
+def ablation_overall(outcomes: list[CaseOutcome]) -> Lift:
+    """SECONDARY: aggregate R2 lift across the whole routed tail."""
+    routed = [o for o in outcomes if o.tail_arm is not None]
+    return Lift(
+        treatment=_proportion([o for o in routed if o.tail_arm is TailArm.AGENT_LOOP]),
+        control=_proportion([o for o in routed if o.tail_arm is TailArm.DETERMINISTIC_FALLBACK]),
+    )
+
+
 def natural_subtype_weights(population: list[CaseOutcome]) -> dict[str, float]:
     """Subtype prevalence among tail cases in the *unenriched* population.
 
@@ -176,11 +206,18 @@ def natural_subtype_weights(population: list[CaseOutcome]) -> dict[str, float]:
 
 
 def compose_tail_contribution(
-    enriched: list[CaseOutcome], population: list[CaseOutcome]
+    enriched: list[CaseOutcome],
+    population: list[CaseOutcome],
+    per_subtype: dict[str, Lift],
 ) -> tuple[float, float]:
-    """Compose enriched tail lift back to the population.
+    """Compose an enriched-tail lift back to the population.
 
     Returns ``(rate_contribution, money_contribution_paise)``.
+
+    ``per_subtype`` is passed in rather than computed here so the caller must
+    say which comparison is being composed -- :func:`ablation_by_subtype` for
+    R2, :func:`tail_lift_by_subtype` for the arm-level view. Composing the wrong
+    one would silently answer a different question.
 
     Rate and money are composed separately and deliberately. High-value
     enrichment makes them diverge: the same rate lift concentrated in expensive
@@ -188,7 +225,6 @@ def compose_tail_contribution(
     honestly stand for both.
     """
     weights = natural_subtype_weights(population)
-    per_subtype = tail_lift_by_subtype(enriched)
     tail_prevalence = sum(1 for o in population if o.tail_subtype is not None) / max(
         len(population), 1
     )
@@ -201,12 +237,7 @@ def compose_tail_contribution(
             continue
         rate_sum += weight * lift.value
         recovered = [
-            o
-            for o in enriched
-            if o.tail_subtype
-            and o.tail_subtype.value == name
-            and o.recovered
-            and o.arm is ExperimentArm.TREATMENT
+            o for o in enriched if o.tail_subtype and o.tail_subtype.value == name and o.recovered
         ]
         mean_amount = sum(int(o.amount) for o in recovered) / len(recovered) if recovered else 0.0
         money_sum += weight * lift.value * mean_amount

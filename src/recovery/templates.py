@@ -46,3 +46,21 @@ PAYMENT_LINK = MessageTemplate(
 REGISTERED: dict[str, MessageTemplate] = {
     t.template_id: t for t in (PREDEBIT_NOTICE, DUNNING_REMINDER, INSTRUMENT_UPDATE, PAYMENT_LINK)
 }
+
+
+def bind_variables(template_id: str) -> dict[str, str]:
+    """Bind every variable a template requires.
+
+    Values come from the case ledger, never from a planner and never from a
+    model -- a planner names a template, the system fills it. Centralised here
+    so the rules path and the agent path cannot diverge in what they are
+    permitted to put in front of a customer.
+
+    In the simulator the bindings are placeholders keyed by variable name; a
+    live integration substitutes merchant name, amount, mandate reference and
+    debit time from the case record at send time.
+    """
+    template = REGISTERED.get(template_id)
+    if template is None:
+        raise KeyError(f"'{template_id}' is not a registered template")
+    return {name: name for name in sorted(template.required_variables)}

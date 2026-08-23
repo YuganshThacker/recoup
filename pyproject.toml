@@ -6,6 +6,10 @@ requires-python = ">=3.11"
 dependencies = []
 
 [project.optional-dependencies]
+# The policy engine, batch runner and metrics have no runtime dependencies and
+# run offline. Only the live model client needs the SDK, and it imports lazily,
+# so `--agent off` and `--agent scripted` work without installing this extra.
+agent = ["anthropic>=0.69"]
 dev = ["pytest>=8.0", "ruff>=0.6", "mypy>=1.11"]
 
 [build-system]
