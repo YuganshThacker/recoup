@@ -128,12 +128,22 @@ ALLOWED_TRANSITIONS: dict[CaseState, frozenset[CaseState]] = {
     CaseState.COOLING: frozenset(
         {CaseState.DIAGNOSED, CaseState.RECOVERED, CaseState.STOPPED},
     ),
-    CaseState.DIAGNOSED: frozenset({CaseState.PLANNED, CaseState.STOPPED}),
+    # RECOVERED is reachable here because diagnosis re-checks payment status
+    # before acting, which is where a self-cured invoice is discovered.
+    CaseState.DIAGNOSED: frozenset(
+        {CaseState.PLANNED, CaseState.RECOVERED, CaseState.STOPPED},
+    ),
     CaseState.PLANNED: frozenset(
         {CaseState.NOTICE_PENDING, CaseState.SCHEDULED, CaseState.STOPPED},
     ),
-    CaseState.NOTICE_PENDING: frozenset({CaseState.SCHEDULED, CaseState.STOPPED}),
-    CaseState.SCHEDULED: frozenset({CaseState.EXECUTING, CaseState.STOPPED}),
+    # Waiting states return to diagnosis: once the clock advances, the case
+    # is re-planned rather than resumed blindly.
+    CaseState.NOTICE_PENDING: frozenset(
+        {CaseState.SCHEDULED, CaseState.DIAGNOSED, CaseState.STOPPED},
+    ),
+    CaseState.SCHEDULED: frozenset(
+        {CaseState.EXECUTING, CaseState.DIAGNOSED, CaseState.STOPPED},
+    ),
     CaseState.EXECUTING: frozenset({CaseState.AWAITING_OUTCOME, CaseState.STOPPED}),
     CaseState.AWAITING_OUTCOME: frozenset(
         # The loop: a failed attempt re-enters diagnosis for the next round.

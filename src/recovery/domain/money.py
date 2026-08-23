@@ -81,3 +81,14 @@ def format_inr(amount: Paise) -> str:
 def total(amounts: list[Paise]) -> Paise:
     """Sum paise values. Integer arithmetic, so exact by construction."""
     return paise(sum(int(a) for a in amounts))
+
+
+def format_signed_inr(minor_units: int) -> str:
+    """Format a signed paise quantity for display.
+
+    :func:`paise` rejects negatives on purpose -- an amount is never negative.
+    A *difference* between amounts legitimately is, and a negative contribution
+    is a real result that must be reportable rather than crash the report.
+    """
+    sign = "-" if minor_units < 0 else ""
+    return f"{sign}{format_inr(paise(abs(minor_units)))}"
