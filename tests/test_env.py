@@ -11,7 +11,15 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from recovery.env import _parse, describe_credentials, load_dotenv
+import pytest
+
+from recovery.env import (
+    CredentialError,
+    _parse,
+    describe_credentials,
+    load_dotenv,
+    validate_credential,
+)
 
 
 def test_parses_plain_and_quoted_values() -> None:
@@ -83,3 +91,38 @@ def test_describe_credentials_says_none_when_absent(monkeypatch) -> None:  # typ
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     assert describe_credentials() == "none"
+
+
+# --- credential shape ------------------------------------------------------
+
+
+def test_missing_credential_is_named() -> None:
+    with pytest.raises(CredentialError, match="OPENAI_API_KEY is not set"):
+        validate_credential("OPENAI_API_KEY", None)
+
+
+def test_placeholder_is_rejected() -> None:
+    with pytest.raises(CredentialError, match="still the placeholder"):
+        validate_credential("OPENAI_API_KEY", "paste-your-key-here")
+
+
+def test_whitespace_is_rejected() -> None:
+    with pytest.raises(CredentialError, match="whitespace"):
+        validate_credential("OPENAI_API_KEY", "sk-abc123 ")
+
+
+def test_smart_dash_is_caught_and_explained() -> None:
+    # The real failure this exists for: a key pasted through something that
+    # reformats text. Without this the SDK raises UnicodeEncodeError from deep
+    # inside the HTTP stack, which says nothing about the cause.
+    with pytest.raises(CredentialError) as info:
+        validate_credential("OPENAI_API_KEY", "sk-proj\u2013abc")
+    message = str(info.value)
+    assert "non-ASCII" in message
+    assert "typographic dashes" in message
+    # Never the value itself.
+    assert "sk-proj" not in message
+
+
+def test_valid_credential_passes() -> None:
+    validate_credential("OPENAI_API_KEY", "sk-proj-" + "a" * 100)

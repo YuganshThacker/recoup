@@ -31,7 +31,7 @@ from recovery.batch.metrics import (
 )
 from recovery.batch.runner import CaseOutcome, run_batch
 from recovery.domain.money import format_inr, format_signed_inr
-from recovery.env import describe_credentials, load_dotenv
+from recovery.env import CredentialError, describe_credentials, load_dotenv, validate_credential
 from recovery.planner.rules import DeclineConditionalPlanner, PlatformDefaultPlanner
 from recovery.sim.generator import generate
 
@@ -75,13 +75,14 @@ def _require_credentials(provider: str) -> None:
     result.
     """
     key = _REQUIRED_KEY[provider]
-    if os.environ.get(key):
-        return
-    raise SystemExit(
-        f"{key} is not set, so --agent live cannot run.\n"
-        f"Put it in .env at the repository root (gitignored), or export it.\n"
-        f"Credentials currently visible: {describe_credentials()}"
-    )
+    try:
+        validate_credential(key, os.environ.get(key))
+    except CredentialError as exc:
+        raise SystemExit(
+            f"{exc}, so --agent live cannot run.\n"
+            f"Put it in .env at the repository root (gitignored), or export it.\n"
+            f"Credentials currently visible: {describe_credentials()}"
+        ) from exc
 
 
 def _build_client(args: argparse.Namespace) -> Any | None:
@@ -110,19 +111,54 @@ def _build_client(args: argparse.Namespace) -> Any | None:
     return client
 
 
-def _build_router(args: argparse.Namespace) -> Any:
-    """Assemble the arm router for the requested agent mode."""
+def _build_router(args: argparse.Namespace, client: Any | None) -> Any:
+    """Assemble the arm router for the requested agent mode.
+
+    The client is built once by the caller and shared across both batches, so
+    --token-budget caps the whole run. A per-batch budget would silently permit
+    twice the tokens the operator asked for.
+    """
     rules = DeclineConditionalPlanner()
     control = PlatformDefaultPlanner()
-    client = _build_client(args)
     if client is None:
         return DeterministicArms(treatment=rules, control=control)
     agent = AgentPlanner(client=client, fallback=rules)
     return AgentTailArms(rules=rules, control=control, agent=agent, seed=args.seed)
 
 
+# Above this share of failed model calls, the agent arm is mostly the rules
+# path wearing an agent label, and the comparison stops meaning anything.
+VOID_ABLATION_FAILURE_RATE = 0.25
+
+
+def _ablation_is_void(router: Any) -> str | None:
+    """Reason the R2 comparison cannot be believed, if there is one.
+
+    A run whose model calls all failed still completes -- by design, since the
+    rules path is the floor -- and still prints a lift with a confidence
+    interval. That number would be the rules path compared against itself while
+    claiming to be an ablation, which is worse than an error because it looks
+    like a result. So the failure rate is checked and the finding withdrawn.
+    """
+    telemetry = getattr(getattr(router, "_agent", None), "telemetry", None)
+    if telemetry is None or not telemetry.calls:
+        return None
+    rate = len(telemetry.errors) / telemetry.calls
+    if rate < VOID_ABLATION_FAILURE_RATE:
+        return None
+    kinds = Counter(e.split(":")[0] for e in telemetry.errors).most_common(3)
+    return (
+        f"{rate:.0%} of model calls failed ({dict(kinds)}), so the agent arm is "
+        "mostly the deterministic fallback. The R2 numbers below are not an "
+        "ablation and must not be reported as one."
+    )
+
+
 def _report_ablation(
-    tail_outcomes: list[CaseOutcome], pop_outcomes: list[CaseOutcome], mode: str
+    tail_outcomes: list[CaseOutcome],
+    pop_outcomes: list[CaseOutcome],
+    mode: str,
+    router: Any,
 ) -> None:
     """Print R2, or say plainly why there is no R2 to print."""
     if mode == "off":
@@ -131,6 +167,10 @@ def _report_ablation(
             "  so Batch B above is a deterministic baseline, not an ablation."
         )
         return
+
+    void_reason = _ablation_is_void(router)
+    if void_reason:
+        print(f"\n  R2 ABLATION VOID: {void_reason}")
 
     overall = ablation_overall(tail_outcomes)
     print(f"\n  R2 ablation, agent loop vs deterministic fallback (--agent {mode}):")
@@ -215,8 +255,10 @@ def main() -> None:
         # Key names only. A value must never reach a log or a transcript.
         print(f"loaded from .env: {', '.join(sorted(loaded))}\n")
 
+    client = _build_client(args)
     population = generate(name="population", size=args.population, seed=args.seed)
-    pop_outcomes, pop_provider, _ = run_batch(population, _build_router(args))
+    pop_router = _build_router(args, client)
+    pop_outcomes, pop_provider, _ = run_batch(population, pop_router)
     print(summarise(pop_outcomes, label=f"BATCH A - population (seed {args.seed})"))
     print(
         f"\n  provider calls: {pop_provider.charge_calls} charges, "
@@ -225,7 +267,7 @@ def main() -> None:
     print(f"  message spend:  {format_inr(pop_provider.total_message_cost)}")
 
     enriched = generate(name="tail_enriched", size=args.tail, seed=args.seed + 1, enriched=True)
-    tail_router = _build_router(args)
+    tail_router = _build_router(args, client)
     tail_outcomes, _, _ = run_batch(enriched, tail_router)
 
     suffix = (
@@ -238,8 +280,15 @@ def main() -> None:
         summarise(tail_outcomes, label=f"BATCH B - tail-enriched, {suffix} (seed {args.seed + 1})")
     )
 
-    _report_ablation(tail_outcomes, pop_outcomes, args.agent)
+    _report_ablation(tail_outcomes, pop_outcomes, args.agent, tail_router)
     _report_model_usage(tail_router)
+
+    # Whole-run spend, across both batches, against the ceiling asked for.
+    if isinstance(client, BudgetedClient):
+        print(
+            f"\n  run token budget: {client.tokens_used:,} used of "
+            f"{args.token_budget:,}" + ("  [EXHAUSTED]" if client.exhausted else "")
+        )
 
     print(
         "\nNOTE: these are simulation results. The world model encodes the "

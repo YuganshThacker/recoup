@@ -24,7 +24,13 @@ from recovery.agent.client import (
     ModelReply,
 )
 
-DEFAULT_MODEL = "gpt-5-mini"
+# A non-reasoning model, deliberately. This workload is bounded planning with a
+# small structured output: the model picks one action from a closed menu and
+# names a template. Measured on one identical case, gpt-5-mini spent its whole
+# 1024-token output budget reasoning and returned nothing usable (16.6s), while
+# gpt-4.1-mini answered in 88 output tokens (2.2s). Extended reasoning buys
+# nothing here and costs an order of magnitude in both tokens and latency.
+DEFAULT_MODEL = "gpt-4.1-mini"
 
 # Micro-dollars per token, by model. Populated only where we are confident of
 # list pricing; anything absent reports zero cost and is read in tokens
@@ -89,7 +95,10 @@ class OpenAIClient:
                 },
             )
         except openai.APIStatusError as exc:
-            return self._failed(f"api_status_{exc.status_code}", started)
+            # Keep the provider's explanation. "api_status_401" alone cannot
+            # distinguish a revoked key from a malformed one from a project
+            # without access, and that distinction is the whole diagnosis.
+            return self._failed(f"api_status_{exc.status_code}: {_error_detail(exc)}", started)
         except openai.APIConnectionError:
             return self._failed("api_connection_error", started)
         except openai.OpenAIError as exc:
@@ -152,3 +161,10 @@ class OpenAIClient:
         return ModelReply.failure(
             reason, model=self._model, latency_ms=int((time.monotonic() - started) * 1000)
         )
+
+
+def _error_detail(exc: Any) -> str:
+    """The provider's error message, truncated. Providers mask keys in these."""
+    response = getattr(exc, "response", None)
+    text = getattr(response, "text", "") or str(exc)
+    return " ".join(text.split())[:200]

@@ -77,7 +77,10 @@ class AnthropicClient:
                 output_config={"format": {"type": "json_schema", "schema": schema}},
             )
         except anthropic.APIStatusError as exc:
-            return self._failed(f"api_status_{exc.status_code}", started)
+            # Keep the provider's explanation. "api_status_401" alone cannot
+            # distinguish a revoked key from a malformed one from a project
+            # without access, and that distinction is the whole diagnosis.
+            return self._failed(f"api_status_{exc.status_code}: {_error_detail(exc)}", started)
         except anthropic.APIConnectionError:
             return self._failed("api_connection_error", started)
         except anthropic.AnthropicError as exc:
@@ -129,6 +132,13 @@ class AnthropicClient:
         return ModelReply.failure(
             reason, model=self._model, latency_ms=int((time.monotonic() - started) * 1000)
         )
+
+
+def _error_detail(exc: Any) -> str:
+    """The provider's error message, truncated. Providers mask keys in these."""
+    response = getattr(exc, "response", None)
+    text = getattr(response, "text", "") or str(exc)
+    return " ".join(text.split())[:200]
 
 
 def _first_text_block(response: Any) -> str | None:

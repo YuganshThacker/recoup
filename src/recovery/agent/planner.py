@@ -22,7 +22,7 @@ measures whether the model clears it.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from recovery.agent.client import LLMClient, ModelReply
 from recovery.agent.schema import AgentProposal, InvalidProposal, proposal_schema, validate
@@ -31,6 +31,7 @@ from recovery.domain.events import Actor
 from recovery.domain.money import format_inr
 from recovery.planner.base import Planner
 from recovery.planner.rules import Plan, PlannedStep, PlannerFacts, StopPlan
+from recovery.policy import constants as K
 from recovery.policy.actions import ActionKind, ProposedAction
 from recovery.policy.decision import Decision
 from recovery.policy.engine import PolicyEngine
@@ -104,23 +105,35 @@ def _describe_refusal(decision: Decision) -> str:
     return "\n".join(lines)
 
 
+def _local(moment: datetime) -> str:
+    """Render a time in the customer's timezone.
+
+    The model is being asked to reason about an 08:00-19:00 IST contact window,
+    so handing it UTC and expecting the conversion is a defect in the prompt
+    rather than a weakness in the model. Observed before this change: a proposal
+    whose rationale asserted that 10:30 IST was outside 08:00-19:00.
+    """
+    return moment.astimezone(K.CUSTOMER_TIMEZONE).strftime("%Y-%m-%d %H:%M IST (%a)")
+
+
 def build_prompt(case: RecoveryCase, facts: PlannerFacts, refusals: list[Decision]) -> str:
     """Everything the model may see about this case.
 
     Amounts appear as formatted text for judgement only -- the model has no
     field in which to return one.
     """
-    notice = (
-        facts.notice_sent_at.isoformat() if facts.notice_sent_at else "none sent for this attempt"
-    )
+    notice = _local(facts.notice_sent_at) if facts.notice_sent_at else "none sent for this attempt"
+    local_now = facts.now.astimezone(K.CUSTOMER_TIMEZONE)
+    in_window = K.CONTACT_WINDOW_OPEN_HOUR <= local_now.hour < K.CONTACT_WINDOW_CLOSE_HOUR
     parts = [
         "Case:",
         f"  failure reason: {case.decline_reason}",
         f"  decline class:  {case.decline_class.value}",
         f"  amount:         {format_inr(case.amount)}",
-        f"  attempts used:  {case.attempt_count}",
-        f"  now:            {facts.now.isoformat()}",
-        f"  window closes:  {facts.window_closes_at.isoformat()}",
+        f"  attempts used:  {case.attempt_count} of {K.INTERNAL_MAX_ATTEMPTS_PER_CASE} permitted",
+        f"  now:            {_local(facts.now)}",
+        f"  inside the 08:00-19:00 contact window right now: {in_window}",
+        f"  window closes:  {_local(facts.window_closes_at)}",
         f"  pre-debit notice: {notice}",
         f"  provider outage in progress: {facts.downtime_active}",
         f"  instrument update requested: {facts.instrument_repair_requested}",
