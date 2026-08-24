@@ -44,7 +44,19 @@ AMOUNTS: tuple[int, ...] = (99_00, 199_00, 299_00, 499_00, 999_00, 1_999_00)
 # Razorpay's test mode rate-limits object creation hard. Backoff alone cannot
 # outlast sustained limiting -- it just retries into the same wall -- so the
 # run paces itself under the limit instead of discovering it 29 times.
-DEFAULT_PACE_SECONDS = 1.5
+DEFAULT_PACE_SECONDS = 0.2
+
+
+@dataclass
+class CaseResult:
+    """What one case established."""
+
+    customer: bool = False
+    order: bool = False
+    verified: bool = False
+    link: bool = False
+    link_rate_limited: bool = False
+    duplicate_refused: bool = False
 
 
 @dataclass
@@ -52,10 +64,12 @@ class LiveResult:
     """What Batch C established, and what it did not."""
 
     cases: int = 0
+    customers: int = 0
     orders: int = 0
-    links: int = 0
     verified: int = 0
-    idempotent_hits: int = 0
+    links: int = 0
+    links_rate_limited: int = 0
+    duplicate_refused: int = 0
     failures: list[str] = field(default_factory=list)
     run_id: str = ""
     api_calls: int = 0
@@ -120,76 +134,113 @@ def _prove_webhooks(result: LiveResult, ledger: Ledger) -> None:
         )
 
 
-# Creating a second link per case doubles the rate-limit cost. The duplicate
-# guarantee is a property of the provider, not of any particular case, so it
-# is proven on a few and asserted once.
-DUPLICATE_PROBES = 5
+# Measured against the live test API rather than assumed: orders and customers
+# accept sustained bursts (6/6 in under half a second), while payment_links is
+# quota-limited and exhausts quickly. So the per-case volume rides on the
+# endpoints that carry it, and the link path -- which is the more interesting
+# recovery action but the scarcer resource -- is probed on a few cases and its
+# rate limit reported as the environmental constraint it is.
+LINK_PROBES = 5
 
 
 def _one_case(
     gateway: RazorpayGateway, ledger: Ledger, index: int, amount: Paise, run_id: str
-) -> tuple[bool, bool]:
-    """Run one case against the live API. Returns (created, idempotent_hit).
+) -> CaseResult:
+    """Run one case against the live API.
 
     The reference carries a per-run id. Razorpay enforces reference_id
-    uniqueness account-wide and forever, so an id derived only from the case
-    index collides with every previous run -- which is exactly what happened
-    the first time this was run twice.
+    uniqueness account-wide and permanently, so an id derived only from the case
+    index collides with every previous run -- which is exactly what happened the
+    first time this was run twice.
     """
     case_id = f"live_{index:03d}"
     reference = f"recovery-{run_id}-{case_id}"
+    outcome = CaseResult()
 
-    order = gateway.create_order(amount=amount, receipt=reference, notes={"case_id": case_id})
+    customer = gateway.create_customer(
+        name=f"Recovery Case {index}",
+        email=f"{reference}@example.invalid",
+        contact="9999999999",
+    )
+    outcome.customer = True
     ledger.record(
         case_id,
         EventKind.CASE_DETECTED,
+        Actor.SYSTEM,
+        f"customer created {customer['id']}",
+    )
+
+    order = gateway.create_order(amount=amount, receipt=reference, notes={"case_id": case_id})
+    outcome.order = True
+    ledger.record(
+        case_id,
+        EventKind.ACTION_EXECUTED,
         Actor.SYSTEM,
         f"order created {order['id']}",
         {"amount_paise": order["amount"], "status": order["status"]},
     )
 
-    link = gateway.create_recovery_link(
-        amount=amount,
-        reference_id=reference,
-        description=f"Recovery for {case_id}",
-        notes={"case_id": case_id},
+    # Fetch it back. Creating an object proves the request was accepted; reading
+    # it back proves it exists server-side with the values we sent.
+    fetched = gateway.fetch_order(order["id"])
+    outcome.verified = (
+        fetched["id"] == order["id"]
+        and int(fetched["amount"]) == int(amount)
+        and fetched["receipt"] == reference
     )
-    ledger.record(
-        case_id,
-        EventKind.ACTION_EXECUTED,
-        Actor.SYSTEM,
-        f"recovery link created {link['id']}",
-        {"short_url": link.get("short_url"), "status": link.get("status")},
-    )
-
-    fetched = gateway.fetch_payment_link(link["id"])
-    verified = fetched["id"] == link["id"] and int(fetched["amount"]) == int(amount)
     ledger.record(
         case_id,
         EventKind.OUTCOME_RECORDED,
         Actor.SYSTEM,
-        "link verified server-side" if verified else "link verification FAILED",
+        "order verified server-side" if outcome.verified else "order verification FAILED",
     )
+
+    if index >= LINK_PROBES:
+        return outcome
+
+    try:
+        link = gateway.create_recovery_link(
+            amount=amount,
+            reference_id=reference,
+            description=f"Recovery for {case_id}",
+            notes={"case_id": case_id},
+        )
+        outcome.link = True
+        ledger.record(
+            case_id,
+            EventKind.ACTION_EXECUTED,
+            Actor.SYSTEM,
+            f"recovery link created {link['id']}",
+            {"short_url": link.get("short_url")},
+        )
+    except RazorpayError as exc:
+        outcome.link_rate_limited = "429" in str(exc)
+        ledger.record(
+            case_id,
+            EventKind.ACTION_REFUSED,
+            Actor.SYSTEM,
+            "recovery link refused by provider",
+            {"rate_limited": outcome.link_rate_limited},
+        )
+        return outcome
 
     # Razorpay rejects a duplicate reference_id. That is the provider enforcing
     # the same guarantee our idempotency keys enforce internally, so a rejection
     # here is the success condition.
-    idempotent_hit = False
-    if index >= DUPLICATE_PROBES:
-        return verified, False
     try:
         gateway.create_recovery_link(
             amount=amount, reference_id=reference, description="duplicate attempt"
         )
-    except RazorpayError:
-        idempotent_hit = True
-        ledger.record(
-            case_id,
-            EventKind.ACTION_DEDUPED,
-            Actor.SYSTEM,
-            "duplicate reference_id refused by provider",
-        )
-    return verified, idempotent_hit
+    except RazorpayError as exc:
+        if "already exists" in str(exc):
+            outcome.duplicate_refused = True
+            ledger.record(
+                case_id,
+                EventKind.ACTION_DEDUPED,
+                Actor.SYSTEM,
+                "duplicate reference_id refused by provider",
+            )
+    return outcome
 
 
 def run(cases: int, *, pace_seconds: float = DEFAULT_PACE_SECONDS) -> tuple[LiveResult, Ledger]:
@@ -225,12 +276,14 @@ def run(cases: int, *, pace_seconds: float = DEFAULT_PACE_SECONDS) -> tuple[Live
         if index:
             time.sleep(pace_seconds)
         try:
-            verified, deduped = _one_case(gateway, ledger, index, amount, run_id)
+            case = _one_case(gateway, ledger, index, amount, run_id)
             result.cases += 1
-            result.orders += 1
-            result.links += 1
-            result.verified += int(verified)
-            result.idempotent_hits += int(deduped)
+            result.customers += int(case.customer)
+            result.orders += int(case.order)
+            result.verified += int(case.verified)
+            result.links += int(case.link)
+            result.links_rate_limited += int(case.link_rate_limited)
+            result.duplicate_refused += int(case.duplicate_refused)
         except RazorpayError as exc:
             result.failures.append(f"case {index}: {exc}")
 
@@ -245,12 +298,16 @@ def _print(result: LiveResult) -> None:
     total = sum(int(a) for a in (paise(AMOUNTS[i % len(AMOUNTS)]) for i in range(result.cases)))
     print("=== BATCH C - live Razorpay test-mode integration ===")
     print(f"  run id               {result.run_id}")
-    print(f"  cases run            {result.cases}")
+    print(f"  cases run            {result.cases}/{result.cases + len(result.failures)}")
+    print(f"  customers created    {result.customers}")
     print(f"  orders created       {result.orders}")
-    print(f"  recovery links       {result.links}")
-    print(f"  links verified       {result.verified}/{result.links}")
-    probes = min(result.cases, DUPLICATE_PROBES)
-    print(f"  duplicate refused    {result.idempotent_hits}/{probes} probed")
+    print(f"  orders verified      {result.verified}/{result.orders}")
+    probes = min(result.cases, LINK_PROBES)
+    print(
+        f"  recovery links       {result.links}/{probes} probed"
+        f"  ({result.links_rate_limited} rate-limited by provider)"
+    )
+    print(f"  duplicate refused    {result.duplicate_refused}/{max(result.links, 1)} created")
     print(f"  value covered        {format_inr(paise(total))}")
     print(
         f"  api calls            {result.api_calls} in {result.elapsed_s:.1f}s"

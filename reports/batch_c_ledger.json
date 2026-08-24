@@ -3,31 +3,31 @@
     "actor": "system",
     "case_id": "batch_c",
     "cost_micros": null,
-    "event_id": "5f40bab2-b0c5-4d28-859f-c46ffddd62e5",
+    "event_id": "58fb1078-0109-427b-8b16-1132e25f380b",
     "kind": "provider_callback",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:40:50.158800+00:00",
+    "occurred_at": "2026-08-24T19:59:03.619468+00:00",
     "payload": {
       "by_method": {
         "card": 5,
         "fpx": 2,
-        "netbanking": 4,
+        "netbanking": 5,
         "upi": 2
       }
     },
     "seq": 1,
-    "summary": "live downtime feed: 13 blocking outages"
+    "summary": "live downtime feed: 14 blocking outages"
   },
   {
     "actor": "webhook",
     "case_id": "batch_c",
     "cost_micros": null,
-    "event_id": "d827404e-5114-4341-b9ac-db153ad83c28",
+    "event_id": "f45f0293-a650-446b-87cb-02346d587b6a",
     "kind": "provider_callback",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:40:50.158866+00:00",
+    "occurred_at": "2026-08-24T19:59:03.619542+00:00",
     "payload": {
       "event": "payment.failed"
     },
@@ -38,11 +38,11 @@
     "actor": "system",
     "case_id": "batch_c",
     "cost_micros": null,
-    "event_id": "595dda18-2e3e-4947-ba60-1461ea0993ab",
+    "event_id": "6a67002e-c3f4-43f0-b034-5937b3ef6cc6",
     "kind": "action_refused",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:40:50.158881+00:00",
+    "occurred_at": "2026-08-24T19:59:03.619557+00:00",
     "payload": {},
     "seq": 3,
     "summary": "forged signature rejected"
@@ -51,11 +51,11 @@
     "actor": "system",
     "case_id": "batch_c",
     "cost_micros": null,
-    "event_id": "24ecf515-73cb-4cd6-b5ac-be144bb7a514",
+    "event_id": "ab2fbf97-e5f0-4e4e-a289-2c5517efc8b7",
     "kind": "action_deduped",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:40:50.158891+00:00",
+    "occurred_at": "2026-08-24T19:59:03.619568+00:00",
     "payload": {},
     "seq": 4,
     "summary": "replayed delivery dropped"
@@ -64,1422 +64,2175 @@
     "actor": "system",
     "case_id": "live_000",
     "cost_micros": null,
-    "event_id": "ebba39e2-623d-49bf-bb2a-75e05a92e0b5",
+    "event_id": "9823ff01-8e31-40d9-b67f-33a331a3ef3f",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:40:50.203571+00:00",
+    "occurred_at": "2026-08-24T19:59:03.656164+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjMqwLNxCVQdy"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_000",
+    "cost_micros": null,
+    "event_id": "c02e1a82-06e6-4976-b4b6-a05d56e56648",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:59:03.733086+00:00",
     "payload": {
       "amount_paise": 9900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj3bOGFNAuTIZ"
+    "seq": 2,
+    "summary": "order created order_TTjMqy5RsI2xN2"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_000",
+    "cost_micros": null,
+    "event_id": "f4c353e0-8b5b-4fef-b7dd-c8db5ffb9020",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:59:04.093769+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_000",
+    "cost_micros": null,
+    "event_id": "7f8fb75b-2b39-41a1-8db7-bf71d1462b3e",
+    "kind": "action_refused",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:59:21.274064+00:00",
+    "payload": {
+      "rate_limited": true
+    },
+    "seq": 4,
+    "summary": "recovery link refused by provider"
   },
   {
     "actor": "system",
     "case_id": "live_001",
     "cost_micros": null,
-    "event_id": "cc26b2ae-5fee-4079-a04e-fd57d6c02306",
+    "event_id": "03c1b5cb-563f-40f6-ad0d-61e13166de0a",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:40:58.747493+00:00",
+    "occurred_at": "2026-08-24T19:59:21.517606+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjNAQsft9unjr"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_001",
+    "cost_micros": null,
+    "event_id": "2916e0f7-ce1d-483f-a80f-b188c34d438c",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:59:21.585598+00:00",
     "payload": {
       "amount_paise": 19900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj3kiznV9yOYC"
+    "seq": 2,
+    "summary": "order created order_TTjNATNpxRSX4b"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_001",
+    "cost_micros": null,
+    "event_id": "8eafe74f-e0de-4d6c-a181-76e71780b0c5",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:59:21.942947+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_001",
+    "cost_micros": null,
+    "event_id": "f7a44b43-e7b2-4333-b0b7-ffd31b24e506",
+    "kind": "action_refused",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:59:32.053509+00:00",
+    "payload": {
+      "rate_limited": true
+    },
+    "seq": 4,
+    "summary": "recovery link refused by provider"
   },
   {
     "actor": "system",
     "case_id": "live_002",
     "cost_micros": null,
-    "event_id": "c29e6e2a-bc16-4cc9-91d4-701db7b27d06",
+    "event_id": "21e63c30-a9f1-4139-827a-a44236624dce",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:40:59.235300+00:00",
+    "occurred_at": "2026-08-24T19:59:32.294395+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjNMCFGadUTnN"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_002",
+    "cost_micros": null,
+    "event_id": "542aeb19-a36a-412b-8a10-6d33d0d84788",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:59:32.340110+00:00",
     "payload": {
       "amount_paise": 29900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj3lEJl06mIhF"
+    "seq": 2,
+    "summary": "order created order_TTjNMEB6XwS9l0"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_002",
+    "cost_micros": null,
+    "event_id": "523a3b80-9961-4a9f-98d4-41da2779a89c",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:59:32.745952+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_002",
+    "cost_micros": null,
+    "event_id": "f9749e26-a86e-45ca-a3c6-a4a40627fcd0",
+    "kind": "action_refused",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:59:44.835872+00:00",
+    "payload": {
+      "rate_limited": true
+    },
+    "seq": 4,
+    "summary": "recovery link refused by provider"
   },
   {
     "actor": "system",
     "case_id": "live_003",
     "cost_micros": null,
-    "event_id": "8ead4e58-5ac4-4c70-9958-3654826d25f6",
+    "event_id": "e03a8d01-c95e-4392-9217-fdc34f96f8ac",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:40:59.663929+00:00",
+    "occurred_at": "2026-08-24T19:59:45.097473+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjNaAjVMz6Sdt"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_003",
+    "cost_micros": null,
+    "event_id": "31251d87-cb57-4a31-a0a9-333e77b674f5",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:59:45.156677+00:00",
     "payload": {
       "amount_paise": 49900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj3liOABhY2qW"
-  },
-  {
-    "actor": "system",
-    "case_id": "live_003",
-    "cost_micros": null,
-    "event_id": "4f6ad38a-98a0-4f2c-bb72-38f6510c40f0",
-    "kind": "action_executed",
-    "latency_ms": null,
-    "model": null,
-    "occurred_at": "2026-08-24T19:41:00.130944+00:00",
-    "payload": {
-      "short_url": "https://rzp.io/rzp/CsqImN6",
-      "status": "created"
-    },
     "seq": 2,
-    "summary": "recovery link created plink_TTj3m5TPOWmGgr"
+    "summary": "order created order_TTjNaCoQHQuiXr"
   },
   {
     "actor": "system",
     "case_id": "live_003",
     "cost_micros": null,
-    "event_id": "7d84ae4d-a701-4f3f-87bb-5d6e7cbde07b",
+    "event_id": "e5494a2c-a286-4272-8746-cfb14a80cc5f",
     "kind": "outcome_recorded",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:41:00.183444+00:00",
+    "occurred_at": "2026-08-24T19:59:45.505817+00:00",
     "payload": {},
     "seq": 3,
-    "summary": "link verified server-side"
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_003",
     "cost_micros": null,
-    "event_id": "a27134fa-3e29-4620-9369-52f3aa9ac5f2",
-    "kind": "action_deduped",
+    "event_id": "c1e939b8-4b67-48fe-9bbd-8caa18e17281",
+    "kind": "action_refused",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:41:00.558104+00:00",
-    "payload": {},
+    "occurred_at": "2026-08-24T19:59:55.610505+00:00",
+    "payload": {
+      "rate_limited": true
+    },
     "seq": 4,
-    "summary": "duplicate reference_id refused by provider"
+    "summary": "recovery link refused by provider"
   },
   {
     "actor": "system",
     "case_id": "live_004",
     "cost_micros": null,
-    "event_id": "0117587f-04f2-4c09-9243-7b0212028baa",
+    "event_id": "4f2cba9d-a8a7-406d-82c0-d230399620c7",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:41:00.592832+00:00",
+    "occurred_at": "2026-08-24T19:59:55.864310+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjNluio3x0y9f"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_004",
+    "cost_micros": null,
+    "event_id": "641a035d-77e4-4630-9a7d-edc0c3b8ff93",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:59:55.919062+00:00",
     "payload": {
       "amount_paise": 99900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj3mjU4ww9G6v"
+    "seq": 2,
+    "summary": "order created order_TTjNlyh97gqOoR"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_004",
+    "cost_micros": null,
+    "event_id": "6abd024b-461f-40c1-bc8b-e673c8ec6c09",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:59:56.264514+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_004",
+    "cost_micros": null,
+    "event_id": "4f090a39-e4e3-407b-b685-e92df81f27c9",
+    "kind": "action_refused",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:06.813481+00:00",
+    "payload": {
+      "rate_limited": true
+    },
+    "seq": 4,
+    "summary": "recovery link refused by provider"
   },
   {
     "actor": "system",
     "case_id": "live_005",
     "cost_micros": null,
-    "event_id": "740c595b-a898-4ef1-9b24-22968d1c80a3",
+    "event_id": "c7ee8650-6b73-4b88-be40-566f5ff1470b",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:41:11.740480+00:00",
+    "occurred_at": "2026-08-24T20:00:07.123920+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjNyCjzMWSMJv"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_005",
+    "cost_micros": null,
+    "event_id": "d4a8e1f8-d4d8-40b2-9056-2d873e4f2a80",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:07.164708+00:00",
     "payload": {
       "amount_paise": 199900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj3ytXQXjC0t7"
+    "seq": 2,
+    "summary": "order created order_TTjNyFEnlgBFqf"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_005",
+    "cost_micros": null,
+    "event_id": "381e340f-b071-46db-a0f5-b2fcaddf0bd5",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:07.559654+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_006",
     "cost_micros": null,
-    "event_id": "14ab304c-8ea6-4163-8c6d-ed46f9596e3e",
+    "event_id": "1e94a7a2-d99d-4ee9-b210-a122ed7d01a8",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:41:21.857490+00:00",
+    "occurred_at": "2026-08-24T20:00:07.898036+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjNz3DnDBeoLn"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_006",
+    "cost_micros": null,
+    "event_id": "47c71a2c-feb8-4b86-bed9-ef99463fae86",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:07.970577+00:00",
     "payload": {
       "amount_paise": 9900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj49vxjsaaw5g"
+    "seq": 2,
+    "summary": "order created order_TTjNz6xVt053B0"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_006",
+    "cost_micros": null,
+    "event_id": "ff311b41-83e0-47fa-80a5-6cb8fda20166",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:08.338106+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_007",
     "cost_micros": null,
-    "event_id": "d501548b-4d8f-43ef-a908-0591c6eaa273",
+    "event_id": "ba843207-36ac-4460-9822-608b49bb0b20",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:41:33.007408+00:00",
+    "occurred_at": "2026-08-24T20:00:08.582559+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjNzo4OERpG1x"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_007",
+    "cost_micros": null,
+    "event_id": "28badfab-f9d7-4288-876e-2e96dc535e00",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:08.711391+00:00",
     "payload": {
       "amount_paise": 19900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj4M5VIp8ZNT0"
+    "seq": 2,
+    "summary": "order created order_TTjNzwNzKiVDpA"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_007",
+    "cost_micros": null,
+    "event_id": "22afb7e8-5a1c-49f1-b2c0-e58fd4c211ed",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:09.474726+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_008",
     "cost_micros": null,
-    "event_id": "ca9ddd0c-6845-47ea-8ebb-f6569277e737",
+    "event_id": "152e4283-d3d3-4a0f-b03c-08c5f1fb4bbf",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:41:43.166125+00:00",
+    "occurred_at": "2026-08-24T20:00:09.757565+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjO150yjLLxRe"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_008",
+    "cost_micros": null,
+    "event_id": "a8468acf-da3b-44ca-b597-e0f8d2afc607",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:09.814331+00:00",
     "payload": {
       "amount_paise": 29900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj4XCCA4Fdzic"
+    "seq": 2,
+    "summary": "order created order_TTjO18jAq5r9oX"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_008",
+    "cost_micros": null,
+    "event_id": "699b1f64-3a8d-4bd0-abe2-8a077327fbe5",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:10.223523+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_009",
     "cost_micros": null,
-    "event_id": "1f4f665d-75a1-45d3-aa3e-50792367a6d4",
+    "event_id": "2a7f6611-d257-43c5-ad5d-c9b5749e14b8",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:41:52.304927+00:00",
+    "occurred_at": "2026-08-24T20:00:10.474916+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjO1sLw9pP7K7"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_009",
+    "cost_micros": null,
+    "event_id": "549b78c3-55a7-4016-be7c-5a3f07c6d7b9",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:10.520513+00:00",
     "payload": {
       "amount_paise": 49900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj4hB4Iu3Wzv3"
-  },
-  {
-    "actor": "system",
-    "case_id": "live_009",
-    "cost_micros": null,
-    "event_id": "290838f5-227f-4cf9-8f43-9610b036d62b",
-    "kind": "action_executed",
-    "latency_ms": null,
-    "model": null,
-    "occurred_at": "2026-08-24T19:42:00.854614+00:00",
-    "payload": {
-      "short_url": "https://rzp.io/rzp/7jLkLeLz",
-      "status": "created"
-    },
     "seq": 2,
-    "summary": "recovery link created plink_TTj4qPhYLeMpzL"
+    "summary": "order created order_TTjO1uIUNF8ui5"
   },
   {
     "actor": "system",
     "case_id": "live_009",
     "cost_micros": null,
-    "event_id": "0f3fc25f-0c5a-4719-a3de-357e7e169637",
+    "event_id": "06acc0b2-eade-4f16-8069-f0c349307416",
     "kind": "outcome_recorded",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:42:00.891671+00:00",
+    "occurred_at": "2026-08-24T20:00:11.120212+00:00",
     "payload": {},
     "seq": 3,
-    "summary": "link verified server-side"
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_010",
     "cost_micros": null,
-    "event_id": "affa1c37-4229-41b2-b243-ad7b3c73cc45",
+    "event_id": "bafed3a9-8034-47fa-83ef-0fa726910fe8",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:42:00.933058+00:00",
+    "occurred_at": "2026-08-24T20:00:11.553545+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjO32FoIZgFuH"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_010",
+    "cost_micros": null,
+    "event_id": "249c269f-f836-4213-b2ae-5bca147c3faf",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:11.594013+00:00",
     "payload": {
       "amount_paise": 99900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj4qamdv3RHy0"
-  },
-  {
-    "actor": "system",
-    "case_id": "live_010",
-    "cost_micros": null,
-    "event_id": "7d63af7b-a5b9-4c54-96ed-72c59dcc129d",
-    "kind": "action_executed",
-    "latency_ms": null,
-    "model": null,
-    "occurred_at": "2026-08-24T19:42:01.333205+00:00",
-    "payload": {
-      "short_url": "https://rzp.io/rzp/ydOJriOT",
-      "status": "created"
-    },
     "seq": 2,
-    "summary": "recovery link created plink_TTj4qxeex4IgYS"
+    "summary": "order created order_TTjO35kkTCM10h"
   },
   {
     "actor": "system",
     "case_id": "live_010",
     "cost_micros": null,
-    "event_id": "2ccdf8c7-34eb-433c-aa13-93bd1d740302",
+    "event_id": "573ed275-3345-4b8a-98b0-8666ab289a78",
     "kind": "outcome_recorded",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:42:01.412509+00:00",
+    "occurred_at": "2026-08-24T20:00:11.981653+00:00",
     "payload": {},
     "seq": 3,
-    "summary": "link verified server-side"
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_011",
     "cost_micros": null,
-    "event_id": "6813ad52-28bd-4d9a-a2b5-f13e1afeb320",
+    "event_id": "34ccf7d0-3232-417e-b670-b3d09474e83d",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:42:01.451120+00:00",
+    "occurred_at": "2026-08-24T20:00:12.220156+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjO3mFAzpQtpo"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_011",
+    "cost_micros": null,
+    "event_id": "1eb84004-673b-4abf-8be0-f43ecfaab6cd",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:12.269838+00:00",
     "payload": {
       "amount_paise": 199900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj4r9udweq009"
-  },
-  {
-    "actor": "system",
-    "case_id": "live_011",
-    "cost_micros": null,
-    "event_id": "e627665b-7ba1-4517-9ce1-6cb9c7da8f3b",
-    "kind": "action_executed",
-    "latency_ms": null,
-    "model": null,
-    "occurred_at": "2026-08-24T19:42:02.021964+00:00",
-    "payload": {
-      "short_url": "https://rzp.io/rzp/DVB7pn2",
-      "status": "created"
-    },
     "seq": 2,
-    "summary": "recovery link created plink_TTj4rhvjfBuEXg"
+    "summary": "order created order_TTjO3oWKW5x0uz"
   },
   {
     "actor": "system",
     "case_id": "live_011",
     "cost_micros": null,
-    "event_id": "fae212b3-1d69-44b6-ac82-3d80243324d3",
+    "event_id": "b90266ab-b70b-44a2-8338-1dccfe730aee",
     "kind": "outcome_recorded",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:42:02.087596+00:00",
+    "occurred_at": "2026-08-24T20:00:12.932606+00:00",
     "payload": {},
     "seq": 3,
-    "summary": "link verified server-side"
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_012",
     "cost_micros": null,
-    "event_id": "0a25cb46-7b7a-4159-a059-963bad2b2e47",
+    "event_id": "0908b203-cbc8-481f-a6e4-61aac00d4cc7",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:42:02.132321+00:00",
+    "occurred_at": "2026-08-24T20:00:13.190492+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjO4pznSH3Eqy"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_012",
+    "cost_micros": null,
+    "event_id": "68b302bb-872c-4158-8338-cd7bb46e0072",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:13.294868+00:00",
     "payload": {
       "amount_paise": 9900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj4rtzv3SbLwf"
-  },
-  {
-    "actor": "system",
-    "case_id": "live_012",
-    "cost_micros": null,
-    "event_id": "066399e3-bac0-4f8b-9630-59419fe501f4",
-    "kind": "action_executed",
-    "latency_ms": null,
-    "model": null,
-    "occurred_at": "2026-08-24T19:42:02.525346+00:00",
-    "payload": {
-      "short_url": "https://rzp.io/rzp/DjFen2f",
-      "status": "created"
-    },
     "seq": 2,
-    "summary": "recovery link created plink_TTj4sGneKbGMCm"
+    "summary": "order created order_TTjO4uzGZ9eebt"
   },
   {
     "actor": "system",
     "case_id": "live_012",
     "cost_micros": null,
-    "event_id": "bd56ac11-0ad2-4a82-b492-e4d40c18e2ec",
+    "event_id": "168cc548-106e-41cc-9358-82fa0fc4f9e2",
     "kind": "outcome_recorded",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:42:02.562088+00:00",
+    "occurred_at": "2026-08-24T20:00:13.668453+00:00",
     "payload": {},
     "seq": 3,
-    "summary": "link verified server-side"
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_013",
     "cost_micros": null,
-    "event_id": "1ca3b7c4-4672-439e-9141-db0a6a744b91",
+    "event_id": "f5aa9a48-7654-4892-8bd7-048759f5080c",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:42:02.599079+00:00",
+    "occurred_at": "2026-08-24T20:00:13.998001+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjO5hMfC8cwbI"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_013",
+    "cost_micros": null,
+    "event_id": "f84cf5ee-2344-4406-a3e3-a09aa435a630",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:14.218396+00:00",
     "payload": {
       "amount_paise": 19900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj4sQ2oou6kzH"
-  },
-  {
-    "actor": "system",
-    "case_id": "live_013",
-    "cost_micros": null,
-    "event_id": "36273e8b-b864-4cc7-96e7-92157f996419",
-    "kind": "action_executed",
-    "latency_ms": null,
-    "model": null,
-    "occurred_at": "2026-08-24T19:42:02.985543+00:00",
-    "payload": {
-      "short_url": "https://rzp.io/rzp/rvL0tPBE",
-      "status": "created"
-    },
     "seq": 2,
-    "summary": "recovery link created plink_TTj4smLrgOTqJf"
+    "summary": "order created order_TTjO5qsrnlvnGT"
   },
   {
     "actor": "system",
     "case_id": "live_013",
     "cost_micros": null,
-    "event_id": "edb3a51e-24dc-4747-b7bf-deed3f151746",
+    "event_id": "034cfe9f-c1bf-4745-8cd5-a99f071da5f5",
     "kind": "outcome_recorded",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:42:03.028437+00:00",
+    "occurred_at": "2026-08-24T20:00:14.619877+00:00",
     "payload": {},
     "seq": 3,
-    "summary": "link verified server-side"
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_014",
     "cost_micros": null,
-    "event_id": "5140cbcf-adf8-4d70-9c6d-3069ae6f1190",
+    "event_id": "41f0d670-7f8c-4c11-8439-5166ca892c3b",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:42:03.093124+00:00",
+    "occurred_at": "2026-08-24T20:00:15.007399+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjO6nnKREg7La"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_014",
+    "cost_micros": null,
+    "event_id": "6041df10-9d24-4a22-a093-b53c52fefa20",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:15.091257+00:00",
     "payload": {
       "amount_paise": 29900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj4sxi0ehb8Mp"
+    "seq": 2,
+    "summary": "order created order_TTjO6u3M9Qgka3"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_014",
+    "cost_micros": null,
+    "event_id": "6383bad1-adda-4290-95ee-49868f8606be",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:15.547983+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_015",
     "cost_micros": null,
-    "event_id": "8c9dca7e-ddfb-4b92-bd42-8c9b026da7e0",
+    "event_id": "591f9cb9-06fa-4514-88a4-618fcd3ec905",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:42:14.219141+00:00",
+    "occurred_at": "2026-08-24T20:00:15.800082+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjO7g7hwsQTeA"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_015",
+    "cost_micros": null,
+    "event_id": "404cacc0-b480-404e-82d0-e9757cf99a8b",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:15.859024+00:00",
     "payload": {
       "amount_paise": 49900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj555wp9Nsq0G"
+    "seq": 2,
+    "summary": "order created order_TTjO7k6kOInShM"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_015",
+    "cost_micros": null,
+    "event_id": "34bf77ea-5e1e-4f8e-9535-c8d53559fad4",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:16.200829+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_016",
     "cost_micros": null,
-    "event_id": "5522e18c-1bb4-4355-8e56-fb3b1e6c7b7b",
+    "event_id": "278dcfa9-55d4-4e6a-a87e-783ac90dba0d",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:42:23.340865+00:00",
+    "occurred_at": "2026-08-24T20:00:16.461237+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjO8PM9nYzoUy"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_016",
+    "cost_micros": null,
+    "event_id": "15c75b0b-225f-4110-82cc-3b99a26985fe",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:16.491799+00:00",
     "payload": {
       "amount_paise": 99900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj5F3KXmKgXLE"
+    "seq": 2,
+    "summary": "order created order_TTjO8R55UhJ02r"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_016",
+    "cost_micros": null,
+    "event_id": "62f3707c-0e6c-457f-9680-ef76c9c5744c",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:16.860092+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_017",
     "cost_micros": null,
-    "event_id": "0d6d2816-3bf6-412c-ade4-7812a4a61b2a",
+    "event_id": "e792b5a7-d53d-4b5a-8af9-5b09f7546b4d",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:42:34.503451+00:00",
+    "occurred_at": "2026-08-24T20:00:17.119654+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjO97mAtezXPS"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_017",
+    "cost_micros": null,
+    "event_id": "002a5e6f-3b2c-4356-8798-45cadf688882",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:17.194269+00:00",
     "payload": {
       "amount_paise": 199900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj5RDGGbgzRKS"
+    "seq": 2,
+    "summary": "order created order_TTjO9BQmMCsDZ0"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_017",
+    "cost_micros": null,
+    "event_id": "cc0656ce-7c67-4cbc-a046-ca2b61bbeb4e",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:17.595522+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_018",
     "cost_micros": null,
-    "event_id": "ef464111-684c-49ce-8722-9a8a3dab1035",
+    "event_id": "d7b09ec7-d88b-4f1c-9ccc-a4445c658940",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:42:45.625239+00:00",
+    "occurred_at": "2026-08-24T20:00:17.833647+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjO9twSv3CP4U"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_018",
+    "cost_micros": null,
+    "event_id": "37c37e7a-3204-4e54-b528-a906ea03c2ec",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:17.865045+00:00",
     "payload": {
       "amount_paise": 9900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj5dNx1gyDBzM"
+    "seq": 2,
+    "summary": "order created order_TTjO9w4B9u3r3r"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_018",
+    "cost_micros": null,
+    "event_id": "af041bd8-a43f-4c81-b837-725eefd6c799",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:18.312980+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_019",
     "cost_micros": null,
-    "event_id": "c68b7b77-a31c-4f02-8b0a-eaaecb5fdd5f",
+    "event_id": "b16a1dc3-a2a3-44b0-9f23-31bfb9a19b0d",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:42:55.770798+00:00",
+    "occurred_at": "2026-08-24T20:00:18.565745+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOAhvqq25p5t"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_019",
+    "cost_micros": null,
+    "event_id": "b06484b4-b110-4fd5-a6ce-6349621748ce",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:18.637818+00:00",
     "payload": {
       "amount_paise": 19900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj5oRhwxfyD0Y"
-  },
-  {
-    "actor": "system",
-    "case_id": "live_019",
-    "cost_micros": null,
-    "event_id": "40298912-231d-4821-a348-f68a8452a331",
-    "kind": "action_executed",
-    "latency_ms": null,
-    "model": null,
-    "occurred_at": "2026-08-24T19:43:01.252667+00:00",
-    "payload": {
-      "short_url": "https://rzp.io/rzp/Cg0KlwC3",
-      "status": "created"
-    },
     "seq": 2,
-    "summary": "recovery link created plink_TTj5uNIdFTMEgt"
+    "summary": "order created order_TTjOAm2TtHyl1s"
   },
   {
     "actor": "system",
     "case_id": "live_019",
     "cost_micros": null,
-    "event_id": "1a63e6e3-62bf-4a45-86f7-9b3a8cae18f3",
+    "event_id": "9d780d34-c18d-4e98-8d36-cce63fdd90f5",
     "kind": "outcome_recorded",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:43:01.282475+00:00",
+    "occurred_at": "2026-08-24T20:00:18.991997+00:00",
     "payload": {},
     "seq": 3,
-    "summary": "link verified server-side"
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_020",
     "cost_micros": null,
-    "event_id": "3362893e-803d-4880-893a-27d1e08f9a4e",
+    "event_id": "46ae1a9b-87cf-4824-8d39-9220a26e5644",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:43:01.339174+00:00",
+    "occurred_at": "2026-08-24T20:00:19.240133+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOBRGsoz4O4T"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_020",
+    "cost_micros": null,
+    "event_id": "6fee54f1-acec-4e86-a045-774d7233526b",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:19.285807+00:00",
     "payload": {
       "amount_paise": 29900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj5uVqhzXCINp"
-  },
-  {
-    "actor": "system",
-    "case_id": "live_020",
-    "cost_micros": null,
-    "event_id": "4cff3809-cfbe-4b4f-ad49-7277367e9829",
-    "kind": "action_executed",
-    "latency_ms": null,
-    "model": null,
-    "occurred_at": "2026-08-24T19:43:01.736826+00:00",
-    "payload": {
-      "short_url": "https://rzp.io/rzp/tNQTz0e",
-      "status": "created"
-    },
     "seq": 2,
-    "summary": "recovery link created plink_TTj5uu6uZ1Y3lG"
+    "summary": "order created order_TTjOBU8wTaXXyz"
   },
   {
     "actor": "system",
     "case_id": "live_020",
     "cost_micros": null,
-    "event_id": "d59cc164-6c04-4a59-a0c8-d64c8593ad62",
+    "event_id": "89180b87-8624-4cc2-a827-7df3e969a4ae",
     "kind": "outcome_recorded",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:43:01.771867+00:00",
+    "occurred_at": "2026-08-24T20:00:19.741829+00:00",
     "payload": {},
     "seq": 3,
-    "summary": "link verified server-side"
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_021",
     "cost_micros": null,
-    "event_id": "e1fd1c9c-7230-4b90-aba6-35b5a25e414a",
+    "event_id": "35ed1bcc-3826-44ef-862d-725285ee2543",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:43:01.800953+00:00",
+    "occurred_at": "2026-08-24T20:00:19.987455+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOCFSyW2l1qQ"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_021",
+    "cost_micros": null,
+    "event_id": "27831acd-920b-40db-96b8-fbfc416b2c9a",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:20.020949+00:00",
     "payload": {
       "amount_paise": 49900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj5v2lm43gMpx"
-  },
-  {
-    "actor": "system",
-    "case_id": "live_021",
-    "cost_micros": null,
-    "event_id": "e84e58cd-d304-4e13-bd68-848c9ac12ed3",
-    "kind": "action_executed",
-    "latency_ms": null,
-    "model": null,
-    "occurred_at": "2026-08-24T19:43:02.268989+00:00",
-    "payload": {
-      "short_url": "https://rzp.io/rzp/6pkBIhA",
-      "status": "created"
-    },
     "seq": 2,
-    "summary": "recovery link created plink_TTj5vPJRG8RAYy"
+    "summary": "order created order_TTjOCHpnsZ9uyb"
   },
   {
     "actor": "system",
     "case_id": "live_021",
     "cost_micros": null,
-    "event_id": "694d47b3-2845-4233-be6c-7d3d4290597a",
+    "event_id": "a97cb134-7c3e-437b-8f5f-02cb136597b2",
     "kind": "outcome_recorded",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:43:02.301851+00:00",
+    "occurred_at": "2026-08-24T20:00:20.361598+00:00",
     "payload": {},
     "seq": 3,
-    "summary": "link verified server-side"
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_022",
     "cost_micros": null,
-    "event_id": "9d3c030c-5d08-4864-8b06-9ffb3ecdb2ef",
+    "event_id": "50c9a6cc-c245-4adb-afd1-08e9adf6a52a",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:43:02.347683+00:00",
+    "occurred_at": "2026-08-24T20:00:20.598774+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOCv4JnYVjRz"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_022",
+    "cost_micros": null,
+    "event_id": "e17002a3-54e8-484c-a8a3-56c79b4e7137",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:20.636817+00:00",
     "payload": {
       "amount_paise": 99900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj5vcnOVJQ0ZB"
-  },
-  {
-    "actor": "system",
-    "case_id": "live_022",
-    "cost_micros": null,
-    "event_id": "e2073086-6ff3-4496-8cd6-1ec1f5e99c17",
-    "kind": "action_executed",
-    "latency_ms": null,
-    "model": null,
-    "occurred_at": "2026-08-24T19:43:02.767543+00:00",
-    "payload": {
-      "short_url": "https://rzp.io/rzp/e3LkGG4",
-      "status": "created"
-    },
     "seq": 2,
-    "summary": "recovery link created plink_TTj5w24cyvvBFq"
+    "summary": "order created order_TTjOCxkIX4couB"
   },
   {
     "actor": "system",
     "case_id": "live_022",
     "cost_micros": null,
-    "event_id": "7ada6991-4076-4a94-903a-9601794a854b",
+    "event_id": "0802f690-635d-4ea3-b416-4f1d42fc8f7a",
     "kind": "outcome_recorded",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:43:02.805201+00:00",
+    "occurred_at": "2026-08-24T20:00:20.976833+00:00",
     "payload": {},
     "seq": 3,
-    "summary": "link verified server-side"
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_023",
     "cost_micros": null,
-    "event_id": "f3e31793-0cf2-4864-903a-5443aedaece9",
+    "event_id": "20701f9e-e918-4f1e-998d-128f128bbc20",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:43:02.847622+00:00",
+    "occurred_at": "2026-08-24T20:00:21.223359+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjODbqjEw0u9h"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_023",
+    "cost_micros": null,
+    "event_id": "a206da29-432d-48c7-b8c6-d914ea79fdca",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:21.265288+00:00",
     "payload": {
       "amount_paise": 199900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj5wBQYXYowwo"
-  },
-  {
-    "actor": "system",
-    "case_id": "live_023",
-    "cost_micros": null,
-    "event_id": "1aeb56e3-666e-4627-8720-ca034c6e5d02",
-    "kind": "action_executed",
-    "latency_ms": null,
-    "model": null,
-    "occurred_at": "2026-08-24T19:43:03.246636+00:00",
-    "payload": {
-      "short_url": "https://rzp.io/rzp/lNQD3VTo",
-      "status": "created"
-    },
     "seq": 2,
-    "summary": "recovery link created plink_TTj5wXoVlPHqAI"
+    "summary": "order created order_TTjODdXJzDZIit"
   },
   {
     "actor": "system",
     "case_id": "live_023",
     "cost_micros": null,
-    "event_id": "2d6a60c7-acbf-40c6-aefe-0651df6d55cf",
+    "event_id": "90dbe8e5-0699-4915-95c7-f0fd3f93c6fe",
     "kind": "outcome_recorded",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:43:03.279832+00:00",
+    "occurred_at": "2026-08-24T20:00:21.714379+00:00",
     "payload": {},
     "seq": 3,
-    "summary": "link verified server-side"
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_024",
     "cost_micros": null,
-    "event_id": "1caca3f0-b27a-4336-983c-0fc9ab12af14",
+    "event_id": "7832ab77-40d2-4ea3-9a93-0d6f3eaaab2f",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:43:03.324708+00:00",
+    "occurred_at": "2026-08-24T20:00:21.964947+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOEPUdPQMCO0"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_024",
+    "cost_micros": null,
+    "event_id": "39a89058-adaf-45a1-a6e5-126726b10285",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:22.015797+00:00",
     "payload": {
       "amount_paise": 9900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj5wgs4FH41do"
+    "seq": 2,
+    "summary": "order created order_TTjOEReORg84n9"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_024",
+    "cost_micros": null,
+    "event_id": "63bea371-0314-457b-9806-38dc94b73979",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:22.560706+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_025",
     "cost_micros": null,
-    "event_id": "ed747476-4af3-46d8-9582-8fe7fddd37fb",
+    "event_id": "1274f477-eef3-4373-99da-b29a450c06d5",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:43:15.507108+00:00",
+    "occurred_at": "2026-08-24T20:00:22.809518+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOFKGSJuq2gA"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_025",
+    "cost_micros": null,
+    "event_id": "b7339759-3a13-4350-ae6a-dee3de7360ae",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:23.005199+00:00",
     "payload": {
       "amount_paise": 19900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj69zsfvy58Gu"
+    "seq": 2,
+    "summary": "order created order_TTjOFUaHTDfv8N"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_025",
+    "cost_micros": null,
+    "event_id": "5537a88f-b4c5-49a6-ad8c-d09543928d30",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:23.359352+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_026",
     "cost_micros": null,
-    "event_id": "31daecd8-25d2-44be-9abc-e40432767d12",
+    "event_id": "fb3bc79e-124d-4832-b1bf-70a9251bb634",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:43:25.623912+00:00",
+    "occurred_at": "2026-08-24T20:00:23.626716+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOGDMdd3Z7gT"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_026",
+    "cost_micros": null,
+    "event_id": "d8763ce4-4f7e-4636-9bbd-7224c5e80865",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:23.671078+00:00",
     "payload": {
       "amount_paise": 29900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj6L2JM0p1GCa"
+    "seq": 2,
+    "summary": "order created order_TTjOGH51e9CvAa"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_026",
+    "cost_micros": null,
+    "event_id": "4c25c3a8-314c-4f70-843c-5c2d23a03fc5",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:24.090673+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_027",
     "cost_micros": null,
-    "event_id": "3feca4d3-cc98-4802-86a1-f13fbb3bc42b",
+    "event_id": "f3c52aee-631f-4c37-a96e-cb8c28d855cf",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:43:35.778004+00:00",
+    "occurred_at": "2026-08-24T20:00:24.410410+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOH57iLY4h19"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_027",
+    "cost_micros": null,
+    "event_id": "5cd3f9f0-6ea4-4edf-9234-eba1110e935b",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:24.470722+00:00",
     "payload": {
       "amount_paise": 49900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj6W7ajfQPx07"
+    "seq": 2,
+    "summary": "order created order_TTjOH8wfJ5FUQS"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_027",
+    "cost_micros": null,
+    "event_id": "4eeba948-97cf-4313-be90-2f5d2807b91c",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:24.913762+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_028",
     "cost_micros": null,
-    "event_id": "bdc067f0-6f42-4099-b930-ae2d052eae8f",
+    "event_id": "8e3ff40d-2812-4e43-a8bc-5e20bf5e82eb",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:43:46.902810+00:00",
+    "occurred_at": "2026-08-24T20:00:25.168997+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOHuLZg6NgVe"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_028",
+    "cost_micros": null,
+    "event_id": "9899fb56-851c-4bfb-9800-453d92a25278",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:25.229241+00:00",
     "payload": {
       "amount_paise": 99900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj6iGX9NurHfZ"
+    "seq": 2,
+    "summary": "order created order_TTjOHxAbn39UbU"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_028",
+    "cost_micros": null,
+    "event_id": "8b8696a0-a757-40e9-8fcb-957238c586c2",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:25.688638+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_029",
     "cost_micros": null,
-    "event_id": "de0c2e44-5490-4c06-8ce6-edeb523980e2",
+    "event_id": "e0e872fe-c776-4235-af3d-b6889c2df780",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:43:58.037134+00:00",
+    "occurred_at": "2026-08-24T20:00:25.915669+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOIjFzhcfyrB"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_029",
+    "cost_micros": null,
+    "event_id": "68aac252-4723-4f4f-b8ac-387c9344e2dc",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:26.024400+00:00",
     "payload": {
       "amount_paise": 199900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj6uP5l3egMM3"
-  },
-  {
-    "actor": "system",
-    "case_id": "live_029",
-    "cost_micros": null,
-    "event_id": "5145a0df-4e77-4266-baaa-8bddbee024ce",
-    "kind": "action_executed",
-    "latency_ms": null,
-    "model": null,
-    "occurred_at": "2026-08-24T19:44:01.514996+00:00",
-    "payload": {
-      "short_url": "https://rzp.io/rzp/QlnzwGxk",
-      "status": "created"
-    },
     "seq": 2,
-    "summary": "recovery link created plink_TTj6y9X4LVlva2"
+    "summary": "order created order_TTjOIpH3OJiIun"
   },
   {
     "actor": "system",
     "case_id": "live_029",
     "cost_micros": null,
-    "event_id": "115b3f44-18ab-4d1b-9062-4d59cffade36",
+    "event_id": "1c812aa6-596b-4de8-997c-b4473eb79ed4",
     "kind": "outcome_recorded",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:44:01.545319+00:00",
+    "occurred_at": "2026-08-24T20:00:26.506510+00:00",
     "payload": {},
     "seq": 3,
-    "summary": "link verified server-side"
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_030",
     "cost_micros": null,
-    "event_id": "2b57433b-5503-479b-b793-e248782806c4",
+    "event_id": "05568ca6-bb54-4e2b-b30a-c8fec94b4227",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:44:01.573656+00:00",
+    "occurred_at": "2026-08-24T20:00:26.802819+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOJgYc26qqlB"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_030",
+    "cost_micros": null,
+    "event_id": "36c978aa-d406-4f61-be2e-74edd6d5210c",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:26.852937+00:00",
     "payload": {
       "amount_paise": 9900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj6yHyj270ARw"
-  },
-  {
-    "actor": "system",
-    "case_id": "live_030",
-    "cost_micros": null,
-    "event_id": "64220284-8f69-4145-8e86-12a4867dd8c5",
-    "kind": "action_executed",
-    "latency_ms": null,
-    "model": null,
-    "occurred_at": "2026-08-24T19:44:01.970714+00:00",
-    "payload": {
-      "short_url": "https://rzp.io/rzp/eGX4bhKl",
-      "status": "created"
-    },
     "seq": 2,
-    "summary": "recovery link created plink_TTj6yeAw26EmCd"
+    "summary": "order created order_TTjOJjf9t1T97q"
   },
   {
     "actor": "system",
     "case_id": "live_030",
     "cost_micros": null,
-    "event_id": "f7c5e7d4-797e-4df2-a90b-9cb227c54eee",
+    "event_id": "a6171b20-9a53-4017-9d18-cdc26cbba18b",
     "kind": "outcome_recorded",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:44:02.007002+00:00",
+    "occurred_at": "2026-08-24T20:00:27.266653+00:00",
     "payload": {},
     "seq": 3,
-    "summary": "link verified server-side"
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_031",
     "cost_micros": null,
-    "event_id": "83b33cd5-e398-4e21-8f03-fa50103b51e3",
+    "event_id": "fc8bfb1d-241e-4b1e-89f2-2365a2a51794",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:44:02.061957+00:00",
+    "occurred_at": "2026-08-24T20:00:27.566671+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOKSsTU6xHlX"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_031",
+    "cost_micros": null,
+    "event_id": "61633137-1766-4c59-bee8-32d1db27e6a4",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:27.652125+00:00",
     "payload": {
       "amount_paise": 19900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj6yoLkXY8wlz"
-  },
-  {
-    "actor": "system",
-    "case_id": "live_031",
-    "cost_micros": null,
-    "event_id": "9e7693e3-ac95-4bfe-8880-b48aefaa2687",
-    "kind": "action_executed",
-    "latency_ms": null,
-    "model": null,
-    "occurred_at": "2026-08-24T19:44:02.507822+00:00",
-    "payload": {
-      "short_url": "https://rzp.io/rzp/CmxXVgQc",
-      "status": "created"
-    },
     "seq": 2,
-    "summary": "recovery link created plink_TTj6zBVoskmJRP"
+    "summary": "order created order_TTjOKYhnSCAUJw"
   },
   {
     "actor": "system",
     "case_id": "live_031",
     "cost_micros": null,
-    "event_id": "c1eb1646-8a7a-4882-b7e6-087fb28ff55b",
+    "event_id": "eb66c11f-40cf-4935-a851-5d9b2166e121",
     "kind": "outcome_recorded",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:44:02.539589+00:00",
+    "occurred_at": "2026-08-24T20:00:28.092581+00:00",
     "payload": {},
     "seq": 3,
-    "summary": "link verified server-side"
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_032",
     "cost_micros": null,
-    "event_id": "f7292081-474c-4dbb-95ad-1ab9f2aba0a8",
+    "event_id": "0d122528-d960-4ad4-83d7-8e9caae993d4",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:44:02.598320+00:00",
+    "occurred_at": "2026-08-24T20:00:28.353618+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOLNiC7tImtE"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_032",
+    "cost_micros": null,
+    "event_id": "1cfa55f0-2f7a-4b12-aed3-9dc146eaceee",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:28.391531+00:00",
     "payload": {
       "amount_paise": 29900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj6zOBh5VLnrE"
-  },
-  {
-    "actor": "system",
-    "case_id": "live_032",
-    "cost_micros": null,
-    "event_id": "09e5d757-1405-4aef-84f3-9b9d2a8536ed",
-    "kind": "action_executed",
-    "latency_ms": null,
-    "model": null,
-    "occurred_at": "2026-08-24T19:44:03.024229+00:00",
-    "payload": {
-      "short_url": "https://rzp.io/rzp/ahOO69o5",
-      "status": "created"
-    },
     "seq": 2,
-    "summary": "recovery link created plink_TTj6zn5CKGor5Q"
+    "summary": "order created order_TTjOLQCQhN2An1"
   },
   {
     "actor": "system",
     "case_id": "live_032",
     "cost_micros": null,
-    "event_id": "a2a3574b-3478-489f-9a24-215338a4d78b",
+    "event_id": "4ec79130-a6ff-4404-856a-e2a24b183323",
     "kind": "outcome_recorded",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:44:03.060716+00:00",
+    "occurred_at": "2026-08-24T20:00:29.055335+00:00",
     "payload": {},
     "seq": 3,
-    "summary": "link verified server-side"
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_033",
     "cost_micros": null,
-    "event_id": "d62e7922-1207-488d-a0b3-decaf1db7d81",
+    "event_id": "6166aebb-807c-4210-8f3f-9ab447328ac3",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:44:03.110809+00:00",
+    "occurred_at": "2026-08-24T20:00:29.325052+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOMQYB6ikg7W"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_033",
+    "cost_micros": null,
+    "event_id": "b9e13043-a49c-47f8-b1ce-6237dd4db8fa",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:29.368814+00:00",
     "payload": {
       "amount_paise": 49900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj6zxAumTYxhZ"
-  },
-  {
-    "actor": "system",
-    "case_id": "live_033",
-    "cost_micros": null,
-    "event_id": "1f854314-d2ae-43af-b476-6b28711fd12e",
-    "kind": "action_executed",
-    "latency_ms": null,
-    "model": null,
-    "occurred_at": "2026-08-24T19:44:03.518217+00:00",
-    "payload": {
-      "short_url": "https://rzp.io/rzp/oA661bE8",
-      "status": "created"
-    },
     "seq": 2,
-    "summary": "recovery link created plink_TTj70KWr0qBGEG"
+    "summary": "order created order_TTjOMTSKkGwDEy"
   },
   {
     "actor": "system",
     "case_id": "live_033",
     "cost_micros": null,
-    "event_id": "32781fdd-4ec8-45e6-8a5d-03b682358d62",
+    "event_id": "85fb7dee-45c8-449d-9faa-8d4e4b0e1d0d",
     "kind": "outcome_recorded",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:44:03.551155+00:00",
+    "occurred_at": "2026-08-24T20:00:29.723767+00:00",
     "payload": {},
     "seq": 3,
-    "summary": "link verified server-side"
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_034",
     "cost_micros": null,
-    "event_id": "119ca0b5-183e-4c21-afbf-73527572529d",
+    "event_id": "c76cc845-0eaa-4282-b1a9-bd128aaf6ec5",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:44:03.589873+00:00",
+    "occurred_at": "2026-08-24T20:00:29.972873+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjON9osmxhdtF"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_034",
+    "cost_micros": null,
+    "event_id": "61b9a818-74d2-4b15-98b5-59c4a38205e7",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:30.101957+00:00",
     "payload": {
       "amount_paise": 99900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj70Tiq4P1bKP"
+    "seq": 2,
+    "summary": "order created order_TTjONCaK413sY0"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_034",
+    "cost_micros": null,
+    "event_id": "226fa012-d594-480c-b661-1fdacfa8f33a",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:30.612506+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_035",
     "cost_micros": null,
-    "event_id": "df237630-6bec-4126-be16-56f75533709f",
+    "event_id": "53d44a84-868e-4358-a845-5543a234f3f3",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:44:11.734920+00:00",
+    "occurred_at": "2026-08-24T20:00:30.886485+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOO94giY4sJf"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_035",
+    "cost_micros": null,
+    "event_id": "77f376f2-afac-48ca-b352-148bf0a52a8e",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:30.961671+00:00",
     "payload": {
       "amount_paise": 199900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj79MmnMKtFhr"
+    "seq": 2,
+    "summary": "order created order_TTjOODmwGu5Y85"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_035",
+    "cost_micros": null,
+    "event_id": "31bbe8ad-2471-4c48-b204-d0472f6ed76d",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:31.829265+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_036",
     "cost_micros": null,
-    "event_id": "2fbeb578-32aa-477f-830c-0c2575fde1e8",
+    "event_id": "2b86a8e1-64f1-4bdd-bbc5-dcbd9c72942e",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:44:22.892004+00:00",
+    "occurred_at": "2026-08-24T20:00:32.116763+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOPUxJxjfGnQ"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_036",
+    "cost_micros": null,
+    "event_id": "d54c777f-dfd8-4fbf-9fdc-4cd779147a58",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:32.153715+00:00",
     "payload": {
       "amount_paise": 9900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj7LXKENnSAju"
+    "seq": 2,
+    "summary": "order created order_TTjOPWtgwYaDkp"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_036",
+    "cost_micros": null,
+    "event_id": "2b191abf-4f6e-465f-85f8-397aa6d8ca66",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:32.699556+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_037",
     "cost_micros": null,
-    "event_id": "0a9aefdc-290c-49a3-a2e9-f19cdd1229e3",
+    "event_id": "d082ec2e-089c-4bae-a813-185c24aefbd1",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:44:34.028343+00:00",
+    "occurred_at": "2026-08-24T20:00:32.928077+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOQNkI09kDZh"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_037",
+    "cost_micros": null,
+    "event_id": "7b10c239-8e25-477f-8d2c-d52403c46937",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:32.997437+00:00",
     "payload": {
       "amount_paise": 19900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj7XgWofQu0iJ"
+    "seq": 2,
+    "summary": "order created order_TTjOQRptvs06f1"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_037",
+    "cost_micros": null,
+    "event_id": "ef2d715c-282b-4da1-9baf-fb7cb2764672",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:33.351665+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_038",
     "cost_micros": null,
-    "event_id": "84779774-e922-4fc5-a752-81d746c5e55c",
+    "event_id": "858c158e-df6a-4ed1-953e-6b296d7ab174",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:44:43.177992+00:00",
+    "occurred_at": "2026-08-24T20:00:33.575598+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOR5ZeUUGM9K"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_038",
+    "cost_micros": null,
+    "event_id": "f9409eee-8d11-40a9-8517-7ce14da5d5de",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:33.612665+00:00",
     "payload": {
       "amount_paise": 29900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj7hgXn6Kq2sN"
+    "seq": 2,
+    "summary": "order created order_TTjOR77uuGZ1xh"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_038",
+    "cost_micros": null,
+    "event_id": "0cba223c-3ae8-458a-a40c-eaf0207c5778",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:33.982063+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_039",
     "cost_micros": null,
-    "event_id": "bd33b52b-c85f-43b0-bca2-63451e809d17",
+    "event_id": "c01572ce-4da2-4c60-bc86-0984aee8b7c8",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:44:54.318716+00:00",
+    "occurred_at": "2026-08-24T20:00:34.212604+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjORmpTVgo0JV"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_039",
+    "cost_micros": null,
+    "event_id": "1a87c65a-1921-414c-9119-3f8814e69f08",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:34.256044+00:00",
     "payload": {
       "amount_paise": 49900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj7tqpYIfuMFT"
-  },
-  {
-    "actor": "system",
-    "case_id": "live_039",
-    "cost_micros": null,
-    "event_id": "9de1097c-7042-45a2-9d31-89e162b9a421",
-    "kind": "action_executed",
-    "latency_ms": null,
-    "model": null,
-    "occurred_at": "2026-08-24T19:45:02.828736+00:00",
-    "payload": {
-      "short_url": "https://rzp.io/rzp/OnKlFY3X",
-      "status": "created"
-    },
     "seq": 2,
-    "summary": "recovery link created plink_TTj834nIFXVKXJ"
+    "summary": "order created order_TTjORoYWTRIGgB"
   },
   {
     "actor": "system",
     "case_id": "live_039",
     "cost_micros": null,
-    "event_id": "752b4b18-29df-4193-9c50-f0f5190cad5f",
+    "event_id": "1cddab85-c862-4eee-b393-a059b191b973",
     "kind": "outcome_recorded",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:45:02.876893+00:00",
+    "occurred_at": "2026-08-24T20:00:34.696560+00:00",
     "payload": {},
     "seq": 3,
-    "summary": "link verified server-side"
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_040",
     "cost_micros": null,
-    "event_id": "5118aa67-a66a-4540-ad42-0c22882e628a",
+    "event_id": "60d6d933-d4fe-4df8-b255-aa8ac9eb897a",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:45:02.925859+00:00",
+    "occurred_at": "2026-08-24T20:00:34.938534+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOSZrRKMzcRE"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_040",
+    "cost_micros": null,
+    "event_id": "86774184-37ac-453d-b039-ea14093a9a9c",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:34.966224+00:00",
     "payload": {
       "amount_paise": 99900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj83Eo6ylXBoh"
-  },
-  {
-    "actor": "system",
-    "case_id": "live_040",
-    "cost_micros": null,
-    "event_id": "490d8705-2198-4490-bb82-89efe32f02f9",
-    "kind": "action_executed",
-    "latency_ms": null,
-    "model": null,
-    "occurred_at": "2026-08-24T19:45:03.443022+00:00",
-    "payload": {
-      "short_url": "https://rzp.io/rzp/MOMsQrp",
-      "status": "created"
-    },
     "seq": 2,
-    "summary": "recovery link created plink_TTj83jXc6y3kRq"
+    "summary": "order created order_TTjOSbTgiUhDWl"
   },
   {
     "actor": "system",
     "case_id": "live_040",
     "cost_micros": null,
-    "event_id": "1e26a7c6-8e70-4389-a718-73282e4f5f7a",
+    "event_id": "0c6f1a1a-ddda-463e-8b86-459aa5d608ff",
     "kind": "outcome_recorded",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:45:03.477005+00:00",
+    "occurred_at": "2026-08-24T20:00:35.335747+00:00",
     "payload": {},
     "seq": 3,
-    "summary": "link verified server-side"
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_041",
     "cost_micros": null,
-    "event_id": "10950298-af78-4b02-8f40-516dc9e9f2c7",
+    "event_id": "f1c7818c-c912-42b9-9b80-5c7ee5115150",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:45:03.578059+00:00",
+    "occurred_at": "2026-08-24T20:00:35.561215+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOTG4fBRlpOe"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_041",
+    "cost_micros": null,
+    "event_id": "153f3ca6-c31f-47fd-904f-595e4196691f",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:35.625890+00:00",
     "payload": {
       "amount_paise": 199900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj83wLuSUOEDg"
-  },
-  {
-    "actor": "system",
-    "case_id": "live_041",
-    "cost_micros": null,
-    "event_id": "0a3e8012-9858-4cb9-8987-023898184fd8",
-    "kind": "action_executed",
-    "latency_ms": null,
-    "model": null,
-    "occurred_at": "2026-08-24T19:45:04.019165+00:00",
-    "payload": {
-      "short_url": "https://rzp.io/rzp/8LrKrr8Y",
-      "status": "created"
-    },
     "seq": 2,
-    "summary": "recovery link created plink_TTj84M2Kzrf5Yb"
+    "summary": "order created order_TTjOTHlGvuKEqT"
   },
   {
     "actor": "system",
     "case_id": "live_041",
     "cost_micros": null,
-    "event_id": "5b9cf298-83b9-4427-92c0-12b17567bc2f",
+    "event_id": "6c2e3320-0596-4c94-9b6a-091e6a7f8cb2",
     "kind": "outcome_recorded",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:45:04.104969+00:00",
+    "occurred_at": "2026-08-24T20:00:36.129046+00:00",
     "payload": {},
     "seq": 3,
-    "summary": "link verified server-side"
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_042",
     "cost_micros": null,
-    "event_id": "bdfb011e-e423-4600-a4d1-8bf4f9704977",
+    "event_id": "87e84d28-2d5d-4ba8-b623-12871193fd6d",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:45:04.154019+00:00",
+    "occurred_at": "2026-08-24T20:00:36.484459+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOUG7QopYsSR"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_042",
+    "cost_micros": null,
+    "event_id": "e513fbbe-1ec3-4b55-bb4e-fd19ee1ac12f",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:36.534008+00:00",
     "payload": {
       "amount_paise": 9900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj84ZZrdJARI3"
-  },
-  {
-    "actor": "system",
-    "case_id": "live_042",
-    "cost_micros": null,
-    "event_id": "bdd30b20-d06c-4650-8a31-6904dc39a1ce",
-    "kind": "action_executed",
-    "latency_ms": null,
-    "model": null,
-    "occurred_at": "2026-08-24T19:45:04.560480+00:00",
-    "payload": {
-      "short_url": "https://rzp.io/rzp/eXM409m",
-      "status": "created"
-    },
     "seq": 2,
-    "summary": "recovery link created plink_TTj84xzQ9SN9LY"
+    "summary": "order created order_TTjOUIwDAM1Lki"
   },
   {
     "actor": "system",
     "case_id": "live_042",
     "cost_micros": null,
-    "event_id": "420e6b0c-3198-469c-bfb8-b227194bfed0",
+    "event_id": "21745943-9f58-4080-afd7-3c59bc528824",
     "kind": "outcome_recorded",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:45:04.595585+00:00",
+    "occurred_at": "2026-08-24T20:00:36.891273+00:00",
     "payload": {},
     "seq": 3,
-    "summary": "link verified server-side"
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_043",
     "cost_micros": null,
-    "event_id": "9866c51e-7b2e-42b8-9fca-d461e7296173",
+    "event_id": "1b86b8e9-71b5-481c-96df-18c24d982ec6",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:45:04.652411+00:00",
+    "occurred_at": "2026-08-24T20:00:37.132753+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOUyInuq5GFF"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_043",
+    "cost_micros": null,
+    "event_id": "81e3ddb7-be5a-4622-ac79-00915088f981",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:37.166129+00:00",
     "payload": {
       "amount_paise": 19900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj856wqvjUigJ"
-  },
-  {
-    "actor": "system",
-    "case_id": "live_043",
-    "cost_micros": null,
-    "event_id": "455950f5-f7e4-4ab2-aed1-6bb859cd90ec",
-    "kind": "action_executed",
-    "latency_ms": null,
-    "model": null,
-    "occurred_at": "2026-08-24T19:45:05.075683+00:00",
-    "payload": {
-      "short_url": "https://rzp.io/rzp/FGGiLokx",
-      "status": "created"
-    },
     "seq": 2,
-    "summary": "recovery link created plink_TTj85WLK8X3kP5"
+    "summary": "order created order_TTjOV00DscgPnD"
   },
   {
     "actor": "system",
     "case_id": "live_043",
     "cost_micros": null,
-    "event_id": "62814f87-a2f8-4b79-9a12-261ab2033e17",
+    "event_id": "8fd73d5a-aa31-4d33-a598-7cd99de2dac5",
     "kind": "outcome_recorded",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:45:05.128727+00:00",
+    "occurred_at": "2026-08-24T20:00:37.515158+00:00",
     "payload": {},
     "seq": 3,
-    "summary": "link verified server-side"
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_044",
     "cost_micros": null,
-    "event_id": "40dc598b-ba7d-4c8e-b335-6443f3d5b6db",
+    "event_id": "4afd59fc-e249-49a0-97fc-d81a6304bacd",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:45:05.196726+00:00",
+    "occurred_at": "2026-08-24T20:00:37.762655+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOVeVeAycdiI"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_044",
+    "cost_micros": null,
+    "event_id": "ea743900-02f4-4859-993c-c152271feaf0",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:37.797585+00:00",
     "payload": {
       "amount_paise": 29900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj85iKJYNaEaG"
+    "seq": 2,
+    "summary": "order created order_TTjOVghM17VqYE"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_044",
+    "cost_micros": null,
+    "event_id": "4c40fdad-61a6-49f2-8ae3-36f0f41c9505",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:38.178689+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_045",
     "cost_micros": null,
-    "event_id": "5c389bb4-e11f-4445-a041-4b8a98c5dba6",
+    "event_id": "7f176c31-410b-4362-bec1-9108ba295e4c",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:45:15.347636+00:00",
+    "occurred_at": "2026-08-24T20:00:38.419700+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOWNPLSdYidz"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_045",
+    "cost_micros": null,
+    "event_id": "1b5729bc-6523-4b02-8a6f-3b6f8c892cfe",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:38.460852+00:00",
     "payload": {
       "amount_paise": 49900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj8GnLfY5e7DO"
+    "seq": 2,
+    "summary": "order created order_TTjOWPRrQveV5L"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_045",
+    "cost_micros": null,
+    "event_id": "8269822a-0886-4ea8-b124-86f635037dd6",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:38.852827+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_046",
     "cost_micros": null,
-    "event_id": "8c386b2d-2dd8-4213-b0dc-c4dfb1abcb79",
+    "event_id": "b0cf3f51-7918-46c3-9211-d4c8232bb8d4",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:45:24.529186+00:00",
+    "occurred_at": "2026-08-24T20:00:39.120673+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOX7qSqY4yHE"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_046",
+    "cost_micros": null,
+    "event_id": "a0ff42da-ad22-4a42-a161-36f453d998f1",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:39.199814+00:00",
     "payload": {
       "amount_paise": 99900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj8QojShx5mGI"
+    "seq": 2,
+    "summary": "order created order_TTjOXBFQC8Swar"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_046",
+    "cost_micros": null,
+    "event_id": "58bf92f4-81c4-4c87-af8a-c133ce7c2444",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:39.556250+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_047",
     "cost_micros": null,
-    "event_id": "92199fa1-92c0-4e43-97ce-fdc53c308f58",
+    "event_id": "1d43cad7-6079-46d5-a012-4eaf6f2e4f12",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:45:33.685470+00:00",
+    "occurred_at": "2026-08-24T20:00:39.789700+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOXsGEY9yOnD"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_047",
+    "cost_micros": null,
+    "event_id": "be124c74-40fa-44b7-9322-1d2574f6be58",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:39.830522+00:00",
     "payload": {
       "amount_paise": 199900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj8aodG2SAnZS"
+    "seq": 2,
+    "summary": "order created order_TTjOXu0AnUlEQn"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_047",
+    "cost_micros": null,
+    "event_id": "ff7ebfc0-cf57-4c75-93b7-dd5e9f39c80f",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:40.582562+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_048",
     "cost_micros": null,
-    "event_id": "b2994e44-8b85-45c1-a6fe-dd07a3034006",
+    "event_id": "05dafa5a-8c8c-4d7f-9d55-01e58b3ede79",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:45:41.881510+00:00",
+    "occurred_at": "2026-08-24T20:00:40.823969+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOYziyY6B4CY"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_048",
+    "cost_micros": null,
+    "event_id": "7b060158-3277-40d3-8b9e-6131abbf1f93",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:40.871744+00:00",
     "payload": {
       "amount_paise": 9900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj8jjuN8OCpaT"
+    "seq": 2,
+    "summary": "order created order_TTjOZ2AYluHPn4"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_048",
+    "cost_micros": null,
+    "event_id": "01032cd6-ea9f-4dac-9f35-3e3ccd585167",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:41.211729+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
   },
   {
     "actor": "system",
     "case_id": "live_049",
     "cost_micros": null,
-    "event_id": "8084f221-daf0-45d7-8df6-d98b83126a1b",
+    "event_id": "77f2a770-ff27-492c-aef9-f3bf07476dfc",
     "kind": "case_detected",
     "latency_ms": null,
     "model": null,
-    "occurred_at": "2026-08-24T19:45:50.046113+00:00",
+    "occurred_at": "2026-08-24T20:00:41.457888+00:00",
+    "payload": {},
+    "seq": 1,
+    "summary": "customer created cust_TTjOZgr05BkjE3"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_049",
+    "cost_micros": null,
+    "event_id": "e0c5153b-7055-4365-ad04-706c90a6d632",
+    "kind": "action_executed",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:41.498425+00:00",
     "payload": {
       "amount_paise": 19900,
       "status": "created"
     },
-    "seq": 1,
-    "summary": "order created order_TTj8sezLwvv5FJ"
+    "seq": 2,
+    "summary": "order created order_TTjOZjWu5eNwSE"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_049",
+    "cost_micros": null,
+    "event_id": "fe7e220b-11ad-455f-9a59-3ae8492e9ec1",
+    "kind": "outcome_recorded",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T20:00:41.872571+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "order verified server-side"
   }
 ]

@@ -272,6 +272,9 @@ class RazorpayGateway:
             body["expire_by"] = expire_by
         return self.post("/payment_links", body)
 
+    def fetch_order(self, order_id: str) -> dict[str, Any]:
+        return self.get(f"/orders/{order_id}")
+
     def fetch_payment_link(self, link_id: str) -> dict[str, Any]:
         return self.get(f"/payment_links/{link_id}")
 
