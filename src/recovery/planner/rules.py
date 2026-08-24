@@ -35,6 +35,7 @@ from recovery.domain.case import RecoveryCase, StopReason
 from recovery.domain.failure import DeclineClass
 from recovery.policy import constants as K
 from recovery.policy.actions import ActionKind, Channel, ProposedAction
+from recovery.policy.gates import PolicyContext
 from recovery.templates import bind_variables
 
 NOTICE_TEMPLATE = "RP_PREDEBIT_01"
@@ -80,7 +81,7 @@ class PlannerFacts:
     instrument_repair_requested: bool
     instrument_repaired: bool
 
-    policy_context: object | None = None
+    policy_context: PolicyContext | None = None
     """The gate context, so a planner may pre-check its own proposal.
 
     The deterministic planners ignore this -- they are written to stay inside

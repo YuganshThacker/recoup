@@ -43,7 +43,7 @@ from recovery.sim.generator import generate
 # be demonstrated without spending money. It is deliberately naive -- it ignores
 # decline class entirely -- so a run in this mode shows the harness measuring a
 # weak agent as weak rather than flattering whatever is in the loop.
-_SCRIPTED_PROPOSALS = [
+_SCRIPTED_PROPOSALS: list[dict[str, Any] | None] = [
     {
         "action": "send_predebit_notice",
         "channel": "sms",

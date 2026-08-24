@@ -96,8 +96,11 @@ class WebhookEvent:
         by event, so this returns the first one rather than assuming a shape.
         """
         for wrapper in self.payload.get("payload", {}).values():
-            if isinstance(wrapper, dict) and isinstance(wrapper.get("entity"), dict):
-                return wrapper["entity"]
+            if isinstance(wrapper, dict):
+                entity = wrapper.get("entity")
+                if isinstance(entity, dict):
+                    narrowed: dict[str, Any] = entity
+                    return narrowed
         return {}
 
 
