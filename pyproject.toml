@@ -33,6 +33,11 @@ src = ["src", "tests"]
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
 
+[tool.ruff.lint.per-file-ignores]
+# Embedded CSS and JavaScript. Line length is not a meaningful constraint on
+# a template string, and wrapping it would hurt readability of the asset.
+"src/recovery/report/html.py" = ["E501"]
+
 [tool.mypy]
 python_version = "3.11"
 mypy_path = "src"

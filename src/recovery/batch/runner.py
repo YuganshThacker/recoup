@@ -431,7 +431,7 @@ class ArmRouter(Protocol):
 
 
 def run_batch(
-    batch: Batch, router: ArmRouter
+    batch: Batch, router: ArmRouter, *, workers: int = 1
 ) -> tuple[list[CaseOutcome], SimulatedProvider, Ledger]:
     """Run every case in a batch through the planner its router selects.
 

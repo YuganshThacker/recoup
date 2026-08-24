@@ -12,6 +12,7 @@ second debit, which is the property the double-fire test exercises.
 
 from __future__ import annotations
 
+import threading
 from dataclasses import dataclass, field
 from datetime import datetime
 
@@ -33,11 +34,21 @@ class SimulatedProvider:
     charge_calls: int = 0
     message_calls: int = 0
     repaired: set[str] = field(default_factory=set)
+    # Cases run concurrently and share these ledgers and counters.
+    _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
     def charge(
         self, *, case_id: str, amount: Paise, idempotency_key: str, at: datetime
     ) -> ChargeOutcome:
         """Attempt a debit. Idempotent on ``idempotency_key``."""
+        with self._lock:
+            return self._charge_locked(
+                case_id=case_id, amount=amount, idempotency_key=idempotency_key, at=at
+            )
+
+    def _charge_locked(
+        self, *, case_id: str, amount: Paise, idempotency_key: str, at: datetime
+    ) -> ChargeOutcome:
         seen = self.charge_log.get(idempotency_key)
         if seen is not None:
             # Same key, same answer, and crucially no second debit.
@@ -85,6 +96,10 @@ class SimulatedProvider:
         at: datetime,
     ) -> MessageReceipt:
         """Deliver a registered template. Idempotent on ``idempotency_key``."""
+        with self._lock:
+            return self._send_locked(channel=channel, idempotency_key=idempotency_key)
+
+    def _send_locked(self, *, channel: Channel, idempotency_key: str) -> MessageReceipt:
         seen = self.message_log.get(idempotency_key)
         if seen is not None:
             return MessageReceipt(
@@ -111,10 +126,11 @@ class SimulatedProvider:
         The only route out of a hard decline, and the reason the policy engine
         offers REQUEST_INSTRUMENT_UPDATE as the remediation for one.
         """
-        if self.truths[case_id].repairable:
-            self.repaired.add(case_id)
-            return True
-        return False
+        with self._lock:
+            if self.truths[case_id].repairable:
+                self.repaired.add(case_id)
+                return True
+            return False
 
     @property
     def total_message_cost(self) -> Paise:

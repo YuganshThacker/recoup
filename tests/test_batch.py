@@ -221,3 +221,46 @@ def test_enriched_batch_has_more_tail_than_population() -> None:
     pop_share = sum(1 for o in population if o.tail_subtype) / len(population)
     tail_share = sum(1 for o in enriched if o.tail_subtype) / len(enriched)
     assert tail_share > pop_share
+
+
+def test_concurrency_does_not_change_the_measurement() -> None:
+    # Concurrency touches the measurement path, so identical outcomes are the
+    # correctness guarantee: same seed, same rows, same order. Shared state is
+    # individually locked and routing happens single-threaded before any worker
+    # starts, so the only thing threads change is wall clock.
+    def run(workers: int) -> list[tuple[object, ...]]:
+        batch = generate(name="det", size=600, seed=4242)
+        arms = DeterministicArms(
+            treatment=DeclineConditionalPlanner(), control=PlatformDefaultPlanner()
+        )
+        outcomes, _, _ = run_batch(batch, arms, workers=workers)
+        return [
+            (
+                o.case_id,
+                o.arm.value,
+                o.recovered,
+                o.outcome_source,
+                o.attempts,
+                o.messages,
+                int(o.action_cost),
+                o.stop_reason.value if o.stop_reason else None,
+                o.hours_to_recovery,
+            )
+            for o in outcomes
+        ]
+
+    assert run(1) == run(8)
+
+
+def test_concurrent_run_keeps_provider_counters_exact() -> None:
+    # Counter increments are the classic lost-update race. If these drift, the
+    # idempotency guarantee is not actually being measured.
+    def counts(workers: int) -> tuple[int, int]:
+        batch = generate(name="det", size=600, seed=99)
+        arms = DeterministicArms(
+            treatment=DeclineConditionalPlanner(), control=PlatformDefaultPlanner()
+        )
+        _, provider, _ = run_batch(batch, arms, workers=workers)
+        return provider.charge_calls, provider.message_calls
+
+    assert counts(1) == counts(8)

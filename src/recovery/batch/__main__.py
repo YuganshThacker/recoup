@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import os
 from collections import Counter
+from pathlib import Path
 from typing import Any
 
 from recovery.agent.client import BudgetedClient, ScriptedClient
@@ -33,6 +34,8 @@ from recovery.batch.runner import CaseOutcome, run_batch
 from recovery.domain.money import format_inr, format_signed_inr
 from recovery.env import CredentialError, describe_credentials, load_dotenv, validate_credential
 from recovery.planner.rules import DeclineConditionalPlanner, PlatformDefaultPlanner
+from recovery.report.data import ReportInputs, build
+from recovery.report.html import render
 from recovery.sim.generator import generate
 
 # A minimal but coherent two-step script: notice, then debit once it matures.
@@ -85,6 +88,13 @@ def _require_credentials(provider: str) -> None:
         ) from exc
 
 
+# Share of the run's token budget reserved for the tail batch. Batch A runs
+# first, and with one shared ceiling it simply consumed everything before Batch
+# B started -- starving the very comparison the run exists to make. R2 is the
+# scarce, interesting measurement, so it gets the larger explicit reservation.
+DEFAULT_TAIL_BUDGET_SHARE = 0.8
+
+
 def _build_client(args: argparse.Namespace) -> Any | None:
     """Construct the model client for the requested mode and provider.
 
@@ -106,9 +116,14 @@ def _build_client(args: argparse.Namespace) -> Any | None:
 
         client = AnthropicClient(model=args.model or DEFAULT_MODEL)
 
-    if args.token_budget > 0:
-        return BudgetedClient(client, max_total_tokens=args.token_budget)
     return client
+
+
+def _allocate(client: Any | None, budget: int, share: float) -> Any | None:
+    """Wrap a client with this batch's slice of the run budget."""
+    if client is None or budget <= 0:
+        return client
+    return BudgetedClient(client, max_total_tokens=int(budget * share))
 
 
 def _build_router(args: argparse.Namespace, client: Any | None) -> Any:
@@ -219,6 +234,60 @@ def _report_model_usage(router: Any) -> None:
         print(f"    error kinds        {dict(top)}")
 
 
+def _report_budget(label: str, client: Any, router: Any) -> None:
+    """Per-batch spend and model usage, so a starved batch is obvious."""
+    telemetry = getattr(getattr(router, "_agent", None), "telemetry", None)
+    if telemetry is None or not telemetry.calls:
+        return
+    real = telemetry.calls - len(
+        [e for e in telemetry.errors if e.startswith("token_budget_exhausted")]
+    )
+    per_call = telemetry.total_tokens // max(real, 1)
+    line = (
+        f"\n  {label}: {telemetry.calls} planner calls ({real} reached the model), "
+        f"{telemetry.total_tokens:,} tokens, {telemetry.fallbacks} fallbacks"
+        f"\n    ~{per_call} tokens/call; full demand would be "
+        f"~{telemetry.calls * per_call:,} tokens"
+    )
+    if isinstance(client, BudgetedClient):
+        line += f"\n    budget {client.tokens_used:,} of {client._max_total_tokens:,}"
+        if client.exhausted:
+            line += "  [EXHAUSTED]"
+    print(line)
+
+
+def _write_report(
+    args: argparse.Namespace,
+    pop_outcomes: list[CaseOutcome],
+    pop_ledger: Any,
+    tail_outcomes: list[CaseOutcome],
+    tail_ledger: Any,
+    tail_router: Any,
+) -> None:
+    """Emit the audit report for whichever batch carries the ablation.
+
+    The tail batch is written when the model was in the loop, because that is
+    where the refusal-and-re-plan traces live. Otherwise the population batch,
+    which is the one carrying the primary result.
+    """
+    use_tail = args.agent != "off"
+    path = Path(args.report)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = build(
+        ReportInputs(
+            label="tail-enriched (Batch B)" if use_tail else "population (Batch A)",
+            outcomes=tail_outcomes if use_tail else pop_outcomes,
+            ledger=tail_ledger if use_tail else pop_ledger,
+            seed=args.seed + (1 if use_tail else 0),
+            agent_mode=args.agent,
+            model=args.model if args.agent == "live" else None,
+            void_reason=_ablation_is_void(tail_router) if use_tail else None,
+        )
+    )
+    path.write_text(render(payload), encoding="utf-8")
+    print(f"\n  audit report: {path}  ({path.stat().st_size // 1024} KB)")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="recovery.batch")
     parser.add_argument("--population", type=int, default=4000, help="Batch A size")
@@ -240,6 +309,33 @@ def main() -> None:
         "--model", default=None, help="Model id; defaults to the provider's default."
     )
     parser.add_argument(
+        "--report",
+        default=None,
+        help=(
+            "Write a self-contained HTML audit report here. Opens with no server "
+            "and no network, so the audit trail is inspectable without running anything."
+        ),
+    )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=1,
+        help=(
+            "Concurrent cases. Live runs are network-bound, so this is the "
+            "difference between minutes and an hour. Outcomes are unchanged."
+        ),
+    )
+    parser.add_argument(
+        "--tail-budget-share",
+        type=float,
+        default=DEFAULT_TAIL_BUDGET_SHARE,
+        help=(
+            "Share of --token-budget reserved for the tail batch. R2 is the "
+            "scarce measurement; the population batch runs first and will "
+            "otherwise consume the lot."
+        ),
+    )
+    parser.add_argument(
         "--token-budget",
         type=int,
         default=0,
@@ -255,10 +351,12 @@ def main() -> None:
         # Key names only. A value must never reach a log or a transcript.
         print(f"loaded from .env: {', '.join(sorted(loaded))}\n")
 
-    client = _build_client(args)
+    base_client = _build_client(args)
+    pop_client = _allocate(base_client, args.token_budget, 1 - args.tail_budget_share)
+    tail_client = _allocate(base_client, args.token_budget, args.tail_budget_share)
     population = generate(name="population", size=args.population, seed=args.seed)
-    pop_router = _build_router(args, client)
-    pop_outcomes, pop_provider, _ = run_batch(population, pop_router)
+    pop_router = _build_router(args, pop_client)
+    pop_outcomes, pop_provider, pop_ledger = run_batch(population, pop_router, workers=args.workers)
     print(summarise(pop_outcomes, label=f"BATCH A - population (seed {args.seed})"))
     print(
         f"\n  provider calls: {pop_provider.charge_calls} charges, "
@@ -267,8 +365,8 @@ def main() -> None:
     print(f"  message spend:  {format_inr(pop_provider.total_message_cost)}")
 
     enriched = generate(name="tail_enriched", size=args.tail, seed=args.seed + 1, enriched=True)
-    tail_router = _build_router(args, client)
-    tail_outcomes, _, _ = run_batch(enriched, tail_router)
+    tail_router = _build_router(args, tail_client)
+    tail_outcomes, _, tail_ledger = run_batch(enriched, tail_router, workers=args.workers)
 
     suffix = (
         "DETERMINISTIC BASELINE (no model in the loop)"
@@ -283,12 +381,11 @@ def main() -> None:
     _report_ablation(tail_outcomes, pop_outcomes, args.agent, tail_router)
     _report_model_usage(tail_router)
 
-    # Whole-run spend, across both batches, against the ceiling asked for.
-    if isinstance(client, BudgetedClient):
-        print(
-            f"\n  run token budget: {client.tokens_used:,} used of "
-            f"{args.token_budget:,}" + ("  [EXHAUSTED]" if client.exhausted else "")
-        )
+    _report_budget("population", pop_client, pop_router)
+    _report_budget("tail", tail_client, tail_router)
+
+    if args.report:
+        _write_report(args, pop_outcomes, pop_ledger, tail_outcomes, tail_ledger, tail_router)
 
     print(
         "\nNOTE: these are simulation results. The world model encodes the "

@@ -22,6 +22,7 @@ Design rules, all load-bearing:
 from __future__ import annotations
 
 import json
+import threading
 import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -119,8 +120,13 @@ class InMemoryLedger:
 
     def __init__(self) -> None:
         self._events: dict[str, list[AuditEvent]] = {}
+        self._lock = threading.Lock()
 
     def append(self, event: AuditEvent) -> None:
+        with self._lock:
+            self._append_locked(event)
+
+    def _append_locked(self, event: AuditEvent) -> None:
         history = self._events.setdefault(event.case_id, [])
         expected = len(history) + 1
         if event.seq != expected:
@@ -141,10 +147,17 @@ class InMemoryLedger:
 
 
 class Ledger:
-    """Convenience writer that assigns ids and sequence numbers."""
+    """Convenience writer that assigns ids and sequence numbers.
+
+    Sequence assignment and append are one atomic step. Cases run concurrently,
+    and a read-then-write across threads would interleave into duplicate
+    sequence numbers -- corrupting the one structure the audit trail depends on
+    being ordered.
+    """
 
     def __init__(self, store: LedgerStore) -> None:
         self._store = store
+        self._lock = threading.Lock()
 
     def record(
         self,
@@ -155,17 +168,18 @@ class Ledger:
         payload: dict[str, Any] | None = None,
     ) -> AuditEvent:
         """Append an event. Returns it so callers can attach it to a response."""
-        event = AuditEvent(
-            event_id=str(uuid.uuid4()),
-            case_id=case_id,
-            seq=self._store.next_seq(case_id),
-            occurred_at=datetime.now(UTC),
-            kind=kind,
-            actor=actor,
-            summary=summary,
-            payload=payload or {},
-        )
-        self._store.append(event)
+        with self._lock:
+            event = AuditEvent(
+                event_id=str(uuid.uuid4()),
+                case_id=case_id,
+                seq=self._store.next_seq(case_id),
+                occurred_at=datetime.now(UTC),
+                kind=kind,
+                actor=actor,
+                summary=summary,
+                payload=payload or {},
+            )
+            self._store.append(event)
         return event
 
     def history(self, case_id: str) -> list[AuditEvent]:

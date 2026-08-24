@@ -21,6 +21,7 @@ measures whether the model clears it.
 
 from __future__ import annotations
 
+import threading
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
@@ -78,13 +79,17 @@ class AgentTelemetry:
     fallbacks: int = 0
     invalid_proposals: int = 0
     errors: list[str] = field(default_factory=list)
+    # Cases run concurrently and share one planner, so every counter here is
+    # touched from several threads at once.
+    _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
     def record(self, reply: ModelReply) -> None:
-        self.calls += 1
-        self.input_tokens += reply.input_tokens
-        self.output_tokens += reply.output_tokens
-        self.cost_micros += reply.cost_micros
-        self.latency_ms += reply.latency_ms
+        with self._lock:
+            self.calls += 1
+            self.input_tokens += reply.input_tokens
+            self.output_tokens += reply.output_tokens
+            self.cost_micros += reply.cost_micros
+            self.latency_ms += reply.latency_ms
 
     @property
     def total_tokens(self) -> int:

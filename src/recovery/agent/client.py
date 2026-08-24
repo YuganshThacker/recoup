@@ -17,6 +17,7 @@ them rather than on the model behaving:
 
 from __future__ import annotations
 
+import threading
 from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any, Protocol
@@ -77,17 +78,23 @@ class BudgetedClient:
         self._max_total_tokens = max_total_tokens
         self.tokens_used = 0
         self.refused_for_budget = 0
+        self._lock = threading.Lock()
 
     @property
     def exhausted(self) -> bool:
         return self.tokens_used >= self._max_total_tokens
 
     def propose(self, *, system: str, prompt: str, schema: dict[str, Any]) -> ModelReply:
-        if self.exhausted:
-            self.refused_for_budget += 1
-            return ModelReply.failure("token_budget_exhausted", model="budgeted")
+        with self._lock:
+            if self.exhausted:
+                self.refused_for_budget += 1
+                return ModelReply.failure("token_budget_exhausted", model="budgeted")
+        # The call itself runs outside the lock so workers do not serialise on
+        # network latency; the ceiling therefore overshoots by at most the
+        # number of calls in flight.
         reply = self._inner.propose(system=system, prompt=prompt, schema=schema)
-        self.tokens_used += reply.total_tokens
+        with self._lock:
+            self.tokens_used += reply.total_tokens
         return reply
 
 
