@@ -1,0 +1,117 @@
+loaded from .env: OPENAI_API_KEY
+
+=== BATCH A - population (seed 20260824) ===
+n = 200  (treatment 107, control 93)
+
+PRIMARY
+  recovery rate   treatment 0.7009  control 0.5699
+  lift            +0.1310  95% CI [-0.0018, +0.2639]  [straddles zero]
+  incremental     Rs 12,624.02
+
+DESCRIPTIVE (no significance claims)
+  gross recovered (treated)  Rs 67,525.00
+  outreach cost (treated)    Rs 87.60
+  cost per rupee incremental 0.0069
+
+  recovery by decline class:
+    downtime  t=0.938 c=1.000 delta=-0.062  n=16/10
+    hard      t=0.278 c=0.333 delta=-0.056  n=18/15
+    soft      t=0.771 c=0.559 delta=+0.213  n=70/68
+    unknown   t=0.333 c=0.000 delta=+0.333  n=3/0
+
+  outcome source by arm:
+    treatment  {'attributed': 68, 'none': 32, 'organic': 7}
+    control    {'none': 40, 'attributed': 35, 'organic': 18}
+
+  stopping rules fired:
+    attempt_budget_exhausted         50
+    hard_decline_unrecoverable       28
+    max_escalation_reached           10
+    observation_window_closed        7
+
+  policy refusals by code:
+    hard_decline_no_retry            15
+    outside_contact_hours            9
+
+  exception list:
+    hard_decline_withheld            28
+    unmapped_escalated               10
+    window_closed_undecided          7
+    budget_exhausted                 50
+
+  provider calls: 324 charges, 630 messages
+  message spend:  Rs 126.00
+
+=== BATCH B - tail-enriched, R2 ablation, --agent live (seed 20260825) ===
+n = 700  (treatment 356, control 344)
+
+PRIMARY
+  recovery rate   treatment 0.4775  control 0.4099
+  lift            +0.0676  95% CI [-0.0058, +0.1411]  [straddles zero]
+  incremental     Rs 1,58,842.30
+
+DESCRIPTIVE (no significance claims)
+  gross recovered (treated)  Rs 11,21,330.00
+  outreach cost (treated)    Rs 239.20
+  cost per rupee incremental 0.0015
+
+  recovery by decline class:
+    downtime  t=0.750 c=0.759 delta=-0.009  n=32/29
+    hard      t=0.205 c=0.270 delta=-0.065  n=39/37
+    soft      t=0.690 c=0.526 delta=+0.164  n=155/152
+    unknown   t=0.238 c=0.230 delta=+0.008  n=130/126
+
+  outcome source by arm:
+    treatment  {'none': 186, 'attributed': 108, 'organic': 62}
+    control    {'none': 203, 'attributed': 77, 'organic': 64}
+
+  stopping rules fired:
+    max_escalation_reached           256
+    observation_window_closed        100
+    attempt_budget_exhausted         72
+    hard_decline_unrecoverable       62
+
+  policy refusals by code:
+    unclassified_decline_no_retry    125
+    afa_required_above_threshold     72
+    hard_decline_no_retry            37
+    outside_contact_hours            20
+    predebit_notice_stale            1
+
+  exception list:
+    hard_decline_withheld            62
+    unmapped_escalated               256
+    window_closed_undecided          100
+    budget_exhausted                 72
+
+  R2 ablation, agent loop vs deterministic fallback (--agent live):
+    overall                -0.2124  95% CI [-0.3326, -0.0922]  n=120/119
+    ambiguous_diagnosis    -0.0843  95% CI [-0.2304, +0.0618]  [straddles zero]  n=66/64
+    high_value             -0.2208  95% CI [-0.5590, +0.1175]  [straddles zero]  n=14/11
+    inbound_freetext       -0.3682  95% CI [-0.5599, -0.1765]  n=40/44
+
+  composed to population (subtype-weighted; rate and money separately):
+    rate contribution   -0.0701
+    money contribution  -Rs 2,021.03 per treated case
+
+  model usage:
+    calls              1114
+    tokens             792,192 (699,049 in / 93,143 out)
+    cost               unpriced for this model; read tokens above
+    mean latency       2101 ms
+    re-plans           22
+    fallbacks          133
+    invalid proposals  17
+    error kinds        {'token_budget_exhausted': 116, 'invalid_proposal': 17}
+
+  population: 177 planner calls (136 reached the model), 108,163 tokens, 41 fallbacks
+    ~795 tokens/call; full demand would be ~140,715 tokens
+    budget 108,163 of 108,000  [EXHAUSTED]
+
+  tail: 1114 planner calls (998 reached the model), 792,192 tokens, 133 fallbacks
+    ~793 tokens/call; full demand would be ~883,402 tokens
+    budget 792,192 of 792,000  [EXHAUSTED]
+
+NOTE: these are simulation results. The world model encodes the hypothesis that
+retry timing matters, so it cannot be used to confirm that hypothesis -- only to
+show the policy exploits the structure it is given. See src/recovery/sim/world.py.
