@@ -28,7 +28,7 @@ from datetime import datetime, timedelta
 from recovery.agent.client import LLMClient, ModelReply
 from recovery.agent.schema import AgentProposal, InvalidProposal, proposal_schema, validate
 from recovery.domain.case import RecoveryCase, StopReason
-from recovery.domain.events import Actor
+from recovery.domain.events import Actor, EventKind
 from recovery.domain.money import format_inr
 from recovery.planner.base import Planner
 from recovery.planner.rules import Plan, PlannedStep, PlannerFacts, StopPlan
@@ -219,6 +219,9 @@ class AgentPlanner:
 
             if not reply.ok or reply.payload is None:
                 self.telemetry.errors.append(reply.error or "unknown")
+                self._note(
+                    facts, case, EventKind.ACTION_REFUSED, f"model call failed: {reply.error}"
+                )
                 break
 
             try:
@@ -226,9 +229,27 @@ class AgentPlanner:
             except InvalidProposal as exc:
                 self.telemetry.invalid_proposals += 1
                 self.telemetry.errors.append(f"invalid_proposal:{exc}")
+                self._note(facts, case, EventKind.ACTION_REFUSED, f"proposal rejected: {exc}")
                 break
 
             plan = _to_plan(proposal, facts)
+            self._note(
+                facts,
+                case,
+                EventKind.ACTIONS_PROPOSED,
+                f"model proposed {proposal.action.value} (attempt {attempt + 1})",
+                {
+                    "action": proposal.action.value,
+                    "channel": proposal.channel.value,
+                    "template_id": proposal.template_id,
+                    "delay_hours": proposal.delay_hours,
+                    "confidence": proposal.confidence,
+                    "diagnosis": proposal.diagnosis,
+                    "rationale": proposal.rationale,
+                    "model": reply.model,
+                    "tokens": reply.total_tokens,
+                },
+            )
             if isinstance(plan, StopPlan):
                 return plan
 
@@ -238,9 +259,34 @@ class AgentPlanner:
             if decision.permitted:
                 return plan
 
+            # Record the refusal the model is about to re-plan against. Without
+            # this the audit trail shows only the action finally taken, and the
+            # sequence it most needs to show -- proposed, refused, re-planned --
+            # leaves no trace.
+            self._note(
+                facts,
+                case,
+                EventKind.ACTION_REFUSED,
+                decision.explain(),
+                decision.to_payload(),
+            )
+
             refusals.append(decision)
             if attempt < self._max_replans:
                 self.telemetry.replans += 1
 
         self.telemetry.fallbacks += 1
+        self._note(facts, case, EventKind.STATE_CHANGED, "fell back to the deterministic planner")
         return self._fallback.next_step(case, facts)
+
+    @staticmethod
+    def _note(
+        facts: PlannerFacts,
+        case: RecoveryCase,
+        kind: EventKind,
+        summary: str,
+        payload: dict[str, object] | None = None,
+    ) -> None:
+        """Record to the case ledger when one is available."""
+        if facts.audit is not None:
+            facts.audit.record(case.case_id, kind, Actor.AGENT, summary, payload or {})

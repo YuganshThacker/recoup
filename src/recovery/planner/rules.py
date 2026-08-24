@@ -32,6 +32,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 from recovery.domain.case import RecoveryCase, StopReason
+from recovery.domain.events import Ledger
 from recovery.domain.failure import DeclineClass
 from recovery.policy import constants as K
 from recovery.policy.actions import ActionKind, Channel, ProposedAction
@@ -88,6 +89,14 @@ class PlannerFacts:
     the envelope. The agent planner uses it to gate a proposal before returning
     it, which is what lets a refusal be fed back for re-planning instead of
     surfacing as a dead end in the runner."""
+
+    audit: Ledger | None = None
+    """Where a planner records its own reasoning.
+
+    A sink rather than an observation, which sits oddly among facts, but the
+    alternative is worse: without it the model's proposals and the refusals it
+    re-plans against never reach the ledger, and the sequence the audit trail
+    most needs to show -- propose, refuse, re-plan -- is invisible in it."""
 
 
 def _notice(at: datetime, rationale: str) -> PlannedStep:

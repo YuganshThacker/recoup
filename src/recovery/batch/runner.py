@@ -193,7 +193,7 @@ def run_case(
         if _self_cured(sim, state.now):
             return _finish(sim, state, "organic", ledger)
 
-        plan = planner.next_step(case, _facts(sim, state))
+        plan = planner.next_step(case, _facts(sim, state, ledger))
         if isinstance(plan, StopPlan):
             return _stop(sim, state, plan.reason, ledger)
 
@@ -209,7 +209,7 @@ def run_case(
     return _stop(sim, state, StopReason.MAX_ESCALATION_REACHED, ledger)
 
 
-def _facts(sim: SimCase, state: _RunState) -> PlannerFacts:
+def _facts(sim: SimCase, state: _RunState, ledger: Ledger) -> PlannerFacts:
     return PlannerFacts(
         now=state.now,
         window_closes_at=state.closes_at,
@@ -218,6 +218,7 @@ def _facts(sim: SimCase, state: _RunState) -> PlannerFacts:
         instrument_repair_requested=state.repair_requested,
         instrument_repaired=state.repaired,
         policy_context=_context(sim, state),
+        audit=ledger,
     )
 
 
