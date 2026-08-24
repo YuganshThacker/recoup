@@ -33,7 +33,7 @@ from recovery.batch.metrics import (
     stop_reason_counts,
 )
 from recovery.batch.runner import CaseOutcome
-from recovery.domain.events import Ledger
+from recovery.domain.events import EventKind, Ledger
 from recovery.domain.money import format_inr
 
 DEFAULT_TIMELINE_SAMPLE = 240
@@ -131,6 +131,16 @@ def _timeline(ledger: Ledger, case_id: str) -> list[dict[str, Any]]:
             "actor": event.actor.value,
             "summary": event.summary,
         }
+        # The model's own reasoning, where it produced any. Without this the
+        # drill-down shows what was decided but not what the model thought, and
+        # the refusal below it has nothing to argue with.
+        if event.kind is EventKind.ACTIONS_PROPOSED:
+            entry["proposal"] = {
+                k: event.payload.get(k)
+                for k in ("diagnosis", "rationale", "confidence", "delay_hours", "tokens")
+                if event.payload.get(k) is not None
+            }
+
         gates = event.payload.get("gates")
         if isinstance(gates, list):
             # Passing gates keep their name only. That a gate ran and allowed the

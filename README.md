@@ -12,10 +12,25 @@ engine has not permitted.
 > **We did not build an AI we assume works. We built a system that can prove when
 > AI helps, and when it doesn't.**
 >
-> The recovery system beat the platform default by **+21.6 points**. When we
-> isolated the language model's own contribution, it made recovery **21.2 points
-> worse**. Both numbers are below, with intervals, from runs whose raw output is
+> The recovery system beat the platform default by **+21.6 points** (₹96,908
+> incremental, 95% CI [+15.4, +27.7]). When we isolated the language model's own
+> contribution, it made recovery **21.2 points worse** — so the system keeps
+> deterministic rules in charge and routes the model only where it earns its
+> place. Both numbers are below, with intervals, from runs whose raw output is
 > committed.
+
+| what runs against live Razorpay | what is simulated |
+|---|---|
+| orders, customers, payment links — **50/50 verified server-side** | whether a given retry succeeds |
+| **live downtime feed** — 13 active outages, real bank codes, feeding a real policy gate | which case hits which outage |
+| webhook HMAC verification, forgery rejection, replay dedupe | customer payment behaviour |
+| every model call — **508 real `gpt-4.1-mini` proposals** in the committed audit report | inbound free text (never generated) |
+
+Recovery *outcomes* are simulated because Razorpay's test-mode charge is a
+dashboard button and Subscriptions is not enabled on this account — the real path
+cannot produce a batch of the size statistics need. That boundary is enforced in
+code: `RazorpayGateway.charge()` **refuses** rather than substituting a payment
+link and calling it a debit.
 
 ---
 
@@ -150,6 +165,23 @@ demonstrate it ran.
 python -m recovery.batch --report reports/audit.html
 ```
 
+One real case from that report — `gpt-4.1-mini`, nothing staged:
+
+```
+1  webhook  case_detected      charge failed: debit_instrument_blocked (hard)
+2  agent    action_refused     proposal rejected: 'request_instrument_update'
+                               sends a message but named no template
+3  agent    state_changed      fell back to the deterministic planner
+4  rules    action_refused     refused: request_instrument_update (quiet_hours)
+5  agent    actions_proposed   model proposed request_instrument_update
+6  rules    policy_evaluated   permitted: request_instrument_update via sms
+7  system   action_executed    sent RP_INSTRUMENT_01 via sms
+```
+
+Three independent safety layers firing on one case: schema validation rejecting a
+malformed model output, the deterministic fallback catching it, and a
+contact-hours gate refusing a message outside 08:00–19:00.
+
 ---
 
 ## Razorpay integration
@@ -250,5 +282,6 @@ extended reasoning.
 ## Documentation
 
 - **[RESULTS.md](docs/RESULTS.md)** — every measured outcome, including the unflattering ones
+- **[architecture.md](docs/architecture.md)** — the five layers, every significant decision and what was rejected
 - **[analysis-plan.md](docs/analysis-plan.md)** — pre-registered, pushed before any data
 - **[domain brief](docs/research/2026-08-23-revenue-recovery-domain-brief.md)** — Razorpay error taxonomy, RBI/TRAI/DPDP envelope, the self-cure problem

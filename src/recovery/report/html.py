@@ -70,6 +70,10 @@ border:1px solid var(--line);color:var(--dim)}
 .gate.p{color:var(--ok);border-color:rgba(63,185,80,.3)}
 .gate.f{color:var(--bad);border-color:rgba(248,81,73,.45);background:rgba(248,81,73,.08)}
 .why{margin-top:6px;font-size:12px;color:#ffb3ae;font-family:var(--mono)}
+.think{margin-top:5px;font-size:12px;color:#a9c7ff;padding-left:8px;
+border-left:2px solid rgba(88,166,255,.35)}
+.think b{color:var(--dim);font-weight:600;margin-right:5px}
+.meta{margin-top:4px;font-size:11px;color:var(--dim);font-family:var(--mono)}
 .foot{margin-top:40px;color:var(--dim);font-size:12px;border-top:1px solid var(--line);
 padding-top:16px}
 """
@@ -128,6 +132,16 @@ function show(id){
     h += '<div class="ev '+cls+'">';
     h += '<div class="h">'+e.seq+' &middot; '+e.at+' &middot; '+e.actor+' &middot; '+e.kind+'</div>';
     h += '<div class="s">'+e.summary+'</div>';
+    if (e.proposal){
+      const p = e.proposal;
+      if (p.diagnosis) h += '<div class="think"><b>diagnosis</b> '+p.diagnosis+'</div>';
+      if (p.rationale) h += '<div class="think"><b>rationale</b> '+p.rationale+'</div>';
+      const meta = [];
+      if (p.confidence != null) meta.push('confidence '+p.confidence);
+      if (p.delay_hours != null) meta.push('act in +'+p.delay_hours+'h');
+      if (p.tokens != null) meta.push(p.tokens+' tokens');
+      if (meta.length) h += '<div class="meta">'+meta.join(' \u00b7 ')+'</div>';
+    }
     if (e.gates){
       h += '<div class="gates">';
       for (const g of e.gates){
