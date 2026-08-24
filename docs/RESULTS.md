@@ -78,11 +78,12 @@ deterministic fallback, both inside R1's treatment arm.
 
 ### The result
 
-| | agent loop | deterministic fallback | delta |
-|---|---|---|---|
-| **recovery rate** | 0.3167 | 0.5291 | **−0.2124** |
+**Lift: −0.2124**, 95% CI **[−0.3326, −0.0922]**, n=120/119.
+**The interval excludes zero.**
 
-95% CI **[−0.3326, −0.0922]**, n=120/119. **The interval excludes zero.**
+(The per-arm absolute rates are not quoted: the run printed the difference and
+the arm sizes, not the two rates, and a number that was not printed is not
+evidence. The CLI now prints them so future runs can be cited directly.)
 
 | subtype | delta | 95% CI | n |
 |---|---|---|---|

@@ -68,9 +68,17 @@ class Lift:
         return low <= 0.0 <= high
 
     def describe(self) -> str:
+        """Render the difference *and* the two rates behind it.
+
+        A delta without its arms cannot be checked, and a figure that has to be
+        reconstructed by the reader is a figure that gets reconstructed wrong.
+        """
         low, high = self.interval
         verdict = "  [straddles zero]" if self.straddles_zero else ""
-        return f"{self.value:+.4f}  95% CI [{low:+.4f}, {high:+.4f}]{verdict}"
+        return (
+            f"{self.value:+.4f}  95% CI [{low:+.4f}, {high:+.4f}]{verdict}"
+            f"  ({self.treatment.rate:.4f} vs {self.control.rate:.4f})"
+        )
 
 
 def _split(outcomes: list[CaseOutcome]) -> tuple[list[CaseOutcome], list[CaseOutcome]]:
