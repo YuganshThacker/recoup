@@ -264,3 +264,45 @@ def test_concurrent_run_keeps_provider_counters_exact() -> None:
         return provider.charge_calls, provider.message_calls
 
     assert counts(1) == counts(8)
+
+
+def test_workers_actually_parallelise() -> None:
+    """Guard against the concurrency silently not being wired.
+
+    The determinism test above compares serial and concurrent outcomes, but it
+    passes trivially if *both* run serially -- which is exactly what happened
+    once: a string patch that added the `workers` parameter to the signature
+    silently failed to replace the loop body, and the identical-outcomes test
+    reported success while the pool was never used.
+
+    So this asserts the property the other test cannot see: with a planner that
+    blocks, more workers must finish sooner and touch more than one thread.
+    """
+    import threading
+    import time
+
+    class Blocking:
+        def __init__(self, inner: object) -> None:
+            self.inner = inner
+            self.threads: set[int] = set()
+
+        def next_step(self, case: object, facts: object) -> object:
+            self.threads.add(threading.get_ident())
+            time.sleep(0.02)
+            return self.inner.next_step(case, facts)  # type: ignore[attr-defined]
+
+    def timed(workers: int) -> tuple[float, int]:
+        treatment = Blocking(DeclineConditionalPlanner())
+        control = Blocking(PlatformDefaultPlanner())
+        arms = DeterministicArms(treatment=treatment, control=control)  # type: ignore[arg-type]
+        started = time.monotonic()
+        run_batch(generate(name="p", size=40, seed=5), arms, workers=workers)
+        threads = treatment.threads | control.threads
+        return time.monotonic() - started, len(threads)
+
+    serial_s, serial_threads = timed(1)
+    parallel_s, parallel_threads = timed(8)
+
+    assert serial_threads == 1
+    assert parallel_threads > 1, "pool never spawned a second thread"
+    assert parallel_s < serial_s / 2, f"no speedup: {serial_s:.2f}s -> {parallel_s:.2f}s"

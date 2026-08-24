@@ -22,6 +22,7 @@ them:
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Protocol
@@ -446,10 +447,25 @@ def run_batch(
     amounts = sorted(int(c.case.amount) for c in batch.cases)
     high_value_floor = amounts[int(len(amounts) * 0.9)] if amounts else 0
 
-    outcomes = []
+    # Routing happens up front and single-threaded. Arm assignment is what the
+    # whole experiment rests on, so it is kept off the concurrent path entirely.
+    pairs: list[tuple[SimCase, Planner]] = []
     for sim in batch.cases:
-        # Tail eligibility is known before routing, so the router can see it.
         sim.case.tail_subtype = _tail_subtype(sim, high_value_floor)
-        planner = router.planner_for(sim.case)
-        outcomes.append(run_case(sim, planner, provider, engine, ledger, high_value_floor))
+        pairs.append((sim, router.planner_for(sim.case)))
+
+    def run_one(pair: tuple[SimCase, Planner]) -> CaseOutcome:
+        sim, planner = pair
+        return run_case(sim, planner, provider, engine, ledger, high_value_floor)
+
+    if workers <= 1:
+        return [run_one(p) for p in pairs], provider, ledger
+
+    # Cases are independent: each owns its RecoveryCase, and its outcome is a
+    # function of its own ground truth and the times it acts. The shared pieces
+    # -- provider ledgers, audit ledger, model telemetry, token budget -- are
+    # individually locked. pool.map preserves submission order, so a concurrent
+    # run yields the same rows in the same order as a serial one.
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        outcomes = list(pool.map(run_one, pairs))
     return outcomes, provider, ledger

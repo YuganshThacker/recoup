@@ -41,6 +41,11 @@ from recovery.providers.webhooks import (
 # Realistic Indian subscription price points, in paise.
 AMOUNTS: tuple[int, ...] = (99_00, 199_00, 299_00, 499_00, 999_00, 1_999_00)
 
+# Razorpay's test mode rate-limits object creation hard. Backoff alone cannot
+# outlast sustained limiting -- it just retries into the same wall -- so the
+# run paces itself under the limit instead of discovering it 29 times.
+DEFAULT_PACE_SECONDS = 1.5
+
 
 @dataclass
 class LiveResult:
@@ -52,6 +57,7 @@ class LiveResult:
     verified: int = 0
     idempotent_hits: int = 0
     failures: list[str] = field(default_factory=list)
+    run_id: str = ""
     api_calls: int = 0
     throttled: int = 0
     elapsed_s: float = 0.0
@@ -121,11 +127,17 @@ DUPLICATE_PROBES = 5
 
 
 def _one_case(
-    gateway: RazorpayGateway, ledger: Ledger, index: int, amount: Paise
+    gateway: RazorpayGateway, ledger: Ledger, index: int, amount: Paise, run_id: str
 ) -> tuple[bool, bool]:
-    """Run one case against the live API. Returns (created, idempotent_hit)."""
+    """Run one case against the live API. Returns (created, idempotent_hit).
+
+    The reference carries a per-run id. Razorpay enforces reference_id
+    uniqueness account-wide and forever, so an id derived only from the case
+    index collides with every previous run -- which is exactly what happened
+    the first time this was run twice.
+    """
     case_id = f"live_{index:03d}"
-    reference = f"recovery-{case_id}"
+    reference = f"recovery-{run_id}-{case_id}"
 
     order = gateway.create_order(amount=amount, receipt=reference, notes={"case_id": case_id})
     ledger.record(
@@ -180,7 +192,7 @@ def _one_case(
     return verified, idempotent_hit
 
 
-def run(cases: int) -> tuple[LiveResult, Ledger]:
+def run(cases: int, *, pace_seconds: float = DEFAULT_PACE_SECONDS) -> tuple[LiveResult, Ledger]:
     """Execute Batch C."""
     load_dotenv()
     gateway = RazorpayGateway.from_env()
@@ -193,6 +205,8 @@ def run(cases: int) -> tuple[LiveResult, Ledger]:
     ledger = Ledger(InMemoryLedger())
     result = LiveResult()
     started = time.monotonic()
+    run_id = f"{int(time.time()):x}"
+    result.run_id = run_id
 
     feed = DowntimeFeed(gateway=gateway)
     result.downtimes = feed.summary()
@@ -208,8 +222,10 @@ def run(cases: int) -> tuple[LiveResult, Ledger]:
 
     for index in range(cases):
         amount = paise(AMOUNTS[index % len(AMOUNTS)])
+        if index:
+            time.sleep(pace_seconds)
         try:
-            verified, deduped = _one_case(gateway, ledger, index, amount)
+            verified, deduped = _one_case(gateway, ledger, index, amount, run_id)
             result.cases += 1
             result.orders += 1
             result.links += 1
@@ -228,6 +244,7 @@ def run(cases: int) -> tuple[LiveResult, Ledger]:
 def _print(result: LiveResult) -> None:
     total = sum(int(a) for a in (paise(AMOUNTS[i % len(AMOUNTS)]) for i in range(result.cases)))
     print("=== BATCH C - live Razorpay test-mode integration ===")
+    print(f"  run id               {result.run_id}")
     print(f"  cases run            {result.cases}")
     print(f"  orders created       {result.orders}")
     print(f"  recovery links       {result.links}")
@@ -265,10 +282,16 @@ def _print(result: LiveResult) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(prog="recovery.batch.live")
     parser.add_argument("--cases", type=int, default=50)
+    parser.add_argument(
+        "--pace",
+        type=float,
+        default=DEFAULT_PACE_SECONDS,
+        help="Seconds between cases, to stay under the provider rate limit.",
+    )
     parser.add_argument("--report", default=None, help="write the ledger as JSON")
     args = parser.parse_args()
 
-    result, ledger = run(args.cases)
+    result, ledger = run(args.cases, pace_seconds=args.pace)
     _print(result)
 
     if args.report:
