@@ -16,6 +16,7 @@ no model in the loop to ablate. Reported separately, never blended.
 from __future__ import annotations
 
 import argparse
+import os
 from collections import Counter
 from typing import Any
 
@@ -30,6 +31,7 @@ from recovery.batch.metrics import (
 )
 from recovery.batch.runner import CaseOutcome, run_batch
 from recovery.domain.money import format_inr, format_signed_inr
+from recovery.env import describe_credentials, load_dotenv
 from recovery.planner.rules import DeclineConditionalPlanner, PlatformDefaultPlanner
 from recovery.sim.generator import generate
 
@@ -60,6 +62,28 @@ _SCRIPTED_PROPOSALS = [
 ]
 
 
+_REQUIRED_KEY = {"openai": "OPENAI_API_KEY", "anthropic": "ANTHROPIC_API_KEY"}
+
+
+def _require_credentials(provider: str) -> None:
+    """Fail before generating a batch, not after.
+
+    A live run that discovers a missing key on its first model call has already
+    spent minutes building cases, and every one of them silently falls back to
+    rules -- producing a report that looks like a finished ablation and is not
+    one. Checking up front is the difference between an error and a misleading
+    result.
+    """
+    key = _REQUIRED_KEY[provider]
+    if os.environ.get(key):
+        return
+    raise SystemExit(
+        f"{key} is not set, so --agent live cannot run.\n"
+        f"Put it in .env at the repository root (gitignored), or export it.\n"
+        f"Credentials currently visible: {describe_credentials()}"
+    )
+
+
 def _build_client(args: argparse.Namespace) -> Any | None:
     """Construct the model client for the requested mode and provider.
 
@@ -71,6 +95,7 @@ def _build_client(args: argparse.Namespace) -> Any | None:
     if args.agent != "live":
         return None
 
+    _require_credentials(args.provider)
     if args.provider == "openai":
         from recovery.agent.openai_client import DEFAULT_MODEL, OpenAIClient
 
@@ -184,6 +209,11 @@ def main() -> None:
         ),
     )
     args = parser.parse_args()
+
+    loaded = load_dotenv()
+    if loaded and args.agent == "live":
+        # Key names only. A value must never reach a log or a transcript.
+        print(f"loaded from .env: {', '.join(sorted(loaded))}\n")
 
     population = generate(name="population", size=args.population, seed=args.seed)
     pop_outcomes, pop_provider, _ = run_batch(population, _build_router(args))
