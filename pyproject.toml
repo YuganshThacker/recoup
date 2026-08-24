@@ -12,8 +12,10 @@ dependencies = []
 # max_completion_tokens is why the openai floor is 1.45 -- the reasoning models
 # reject the older max_tokens parameter.
 openai = ["openai>=1.45"]
-# The Razorpay adapter speaks plain HTTP; httpx2 is the only thing it needs.
-razorpay = ["httpx2>=0.1"]
+# The Razorpay adapter speaks plain authenticated HTTP. It uses mainstream
+# httpx rather than whichever transport a model SDK happens to vendor, so the
+# extra stands alone and the dependency is one a reviewer already knows.
+razorpay = ["httpx>=0.27,<1.0"]
 anthropic = ["anthropic>=0.69"]
 dev = ["pytest>=8.0", "ruff>=0.6", "mypy>=1.11"]
 
@@ -49,5 +51,5 @@ strict = true
 # the core runs with neither installed. Their absence is the intended state,
 # not a type error.
 [[tool.mypy.overrides]]
-module = ["anthropic.*", "openai.*", "httpx2.*"]
+module = ["anthropic.*", "openai.*", "httpx.*"]
 ignore_missing_imports = true

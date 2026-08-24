@@ -174,7 +174,7 @@ class RazorpayGateway:
 
     def _http(self) -> Any:
         if self._client is None:
-            import httpx2 as httpx
+            import httpx
 
             self._client = httpx.Client(
                 base_url=API_ROOT,
