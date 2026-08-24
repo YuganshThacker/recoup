@@ -1,118 +1,117 @@
 loaded from .env: OPENAI_API_KEY
 
 === BATCH A - population (seed 20260824) ===
-n = 400  (treatment 205, control 195)
+n = 900  (treatment 458, control 442)
 
 PRIMARY
-  recovery rate   treatment 0.7073  control 0.5538
-  lift            +0.1535  95% CI [+0.0599, +0.2470]
-  incremental     Rs 27,980.15
+  recovery rate   treatment 0.7314  control 0.5158
+  lift            +0.2156  95% CI [+0.1538, +0.2774]
+  incremental     Rs 96,908.74
 
 DESCRIPTIVE (no significance claims)
-  gross recovered (treated)  Rs 1,28,955.00
-  outreach cost (treated)    Rs 150.80
-  cost per rupee incremental 0.0054
+  gross recovered (treated)  Rs 3,28,765.00
+  outreach cost (treated)    Rs 271.20
+  cost per rupee incremental 0.0028
 
   recovery by decline class:
-    downtime  t=1.000 c=1.000 delta=+0.000  n=27/27
-    hard      t=0.290 c=0.259 delta=+0.031  n=31/27
-    soft      t=0.748 c=0.532 delta=+0.216  n=143/139
-    unknown   t=0.500 c=0.000 delta=+0.500  n=4/2
+    downtime  t=0.970 c=1.000 delta=-0.030  n=66/61
+    hard      t=0.217 c=0.241 delta=-0.025  n=60/58
+    soft      t=0.797 c=0.481 delta=+0.316  n=320/318
+    unknown   t=0.250 c=0.000 delta=+0.250  n=12/5
 
   outcome source by arm:
-    treatment  {'attributed': 124, 'none': 60, 'organic': 21}
-    control    {'none': 87, 'attributed': 85, 'organic': 23}
+    treatment  {'attributed': 289, 'none': 123, 'organic': 46}
+    control    {'none': 214, 'attributed': 183, 'organic': 45}
 
   stopping rules fired:
-    attempt_budget_exhausted         96
-    hard_decline_unrecoverable       47
-    observation_window_closed        17
-    max_escalation_reached           17
+    attempt_budget_exhausted         234
+    hard_decline_unrecoverable       103
+    max_escalation_reached           31
+    observation_window_closed        29
 
   policy refusals by code:
-    hard_decline_no_retry            27
-    outside_contact_hours            16
-    unclassified_decline_no_retry    2
+    hard_decline_no_retry            58
+    outside_contact_hours            38
+    unclassified_decline_no_retry    5
+    predebit_notice_stale            1
 
   exception list:
-    hard_decline_withheld            47
-    unmapped_escalated               17
-    window_closed_undecided          17
-    budget_exhausted                 96
+    hard_decline_withheld            103
+    unmapped_escalated               31
+    window_closed_undecided          29
+    budget_exhausted                 234
 
-  provider calls: 646 charges, 1143 messages
-  message spend:  Rs 228.60
+  provider calls: 1519 charges, 2275 messages
+  message spend:  Rs 455.00
 
 === BATCH B - tail-enriched, R2 ablation, --agent live (seed 20260825) ===
-n = 1200  (treatment 608, control 592)
+n = 1400  (treatment 708, control 692)
 
 PRIMARY
-  recovery rate   treatment 0.4770  control 0.4139
-  lift            +0.0631  95% CI [+0.0070, +0.1192]
-  incremental     Rs 2,37,642.88
+  recovery rate   treatment 0.4887  control 0.4234
+  lift            +0.0653  95% CI [+0.0132, +0.1174]
+  incremental     Rs 3,14,767.68
 
 DESCRIPTIVE (no significance claims)
-  gross recovered (treated)  Rs 17,95,710.00
-  outreach cost (treated)    Rs 421.80
-  cost per rupee incremental 0.0018
+  gross recovered (treated)  Rs 23,56,054.00
+  outreach cost (treated)    Rs 426.40
+  cost per rupee incremental 0.0014
 
   recovery by decline class:
-    downtime  t=0.770 c=0.804 delta=-0.033  n=61/56
-    hard      t=0.308 c=0.197 delta=+0.111  n=65/61
-    soft      t=0.639 c=0.550 delta=+0.089  n=266/262
-    unknown   t=0.245 c=0.207 delta=+0.039  n=216/213
+    downtime  t=0.803 c=0.824 delta=-0.021  n=71/68
+    hard      t=0.257 c=0.286 delta=-0.029  n=74/70
+    soft      t=0.689 c=0.495 delta=+0.194  n=315/311
+    unknown   t=0.214 c=0.259 delta=-0.046  n=248/243
 
   outcome source by arm:
-    treatment  {'none': 318, 'attributed': 184, 'organic': 106}
-    control    {'none': 347, 'attributed': 151, 'organic': 94}
+    treatment  {'none': 362, 'attributed': 228, 'organic': 118}
+    control    {'none': 399, 'attributed': 172, 'organic': 121}
 
   stopping rules fired:
-    max_escalation_reached           440
-    observation_window_closed        175
-    attempt_budget_exhausted         121
-    hard_decline_unrecoverable       98
+    max_escalation_reached           505
+    observation_window_closed        189
+    attempt_budget_exhausted         154
+    hard_decline_unrecoverable       114
 
   policy refusals by code:
-    unclassified_decline_no_retry    212
-    afa_required_above_threshold     132
-    hard_decline_no_retry            61
-    outside_contact_hours            35
+    unclassified_decline_no_retry    240
+    afa_required_above_threshold     154
+    hard_decline_no_retry            70
+    outside_contact_hours            40
 
   exception list:
-    hard_decline_withheld            98
-    unmapped_escalated               440
-    window_closed_undecided          175
-    budget_exhausted                 121
+    hard_decline_withheld            114
+    unmapped_escalated               505
+    window_closed_undecided          189
+    budget_exhausted                 154
 
-  R2 ABLATION VOID: 27% of model calls failed ({'token_budget_exhausted': 390, 'invalid_proposal': 17, 'api_connection_error': 1}), so the agent arm is mostly the deterministic fallback. The R2 numbers below are not an ablation and must not be reported as one.
+  R2 ABLATION VOID: 41% of model calls failed ({'token_budget_exhausted': 480, 'api_connection_error': 9, 'invalid_proposal': 5}), so the agent arm is mostly the deterministic fallback. The R2 numbers below are not an ablation and must not be reported as one.
 
   R2 ablation, agent loop vs deterministic fallback (--agent live):
-    overall                -0.0319  95% CI [-0.1242, +0.0605]  [straddles zero]  n=203/222
-    ambiguous_diagnosis    +0.0278  95% CI [-0.0869, +0.1425]  [straddles zero]  n=108/108
-    high_value             -0.0563  95% CI [-0.2741, +0.1616]  [straddles zero]  n=17/23
-    inbound_freetext       -0.0842  95% CI [-0.2317, +0.0632]  [straddles zero]  n=78/91
+    overall                -0.0184  95% CI [-0.1066, +0.0697]  [straddles zero]  n=206/272
+    ambiguous_diagnosis    +0.0011  95% CI [-0.1015, +0.1036]  [straddles zero]  n=112/136
+    high_value             -0.0536  95% CI [-0.3053, +0.1980]  [straddles zero]  n=18/29
+    inbound_freetext       -0.0057  95% CI [-0.1449, +0.1336]  [straddles zero]  n=76/107
 
   composed to population (subtype-weighted; rate and money separately):
-    rate contribution   -0.0164
-    money contribution  -Rs 454.32 per treated case
+    rate contribution   -0.0079
+    money contribution  -Rs 374.10 per treated case
 
   model usage:
-    calls              1527
-    tokens             900,634 (795,092 in / 105,542 out)
+    calls              1196
+    tokens             560,765 (495,214 in / 65,551 out)
     cost               unpriced for this model; read tokens above
-    mean latency       1733 ms
-    re-plans           23
-    fallbacks          408
-    invalid proposals  17
-    error kinds        {'token_budget_exhausted': 390, 'invalid_proposal': 17, 'api_connection_error': 1}
+    mean latency       1337 ms
+    re-plans           13
+    fallbacks          494
+    invalid proposals  5
+    error kinds        {'token_budget_exhausted': 480, 'api_connection_error': 9, 'invalid_proposal': 5}
 
-  population: 225 planner calls (127 reached the model), 100,673 tokens, 98 fallbacks
-    ~792 tokens/call; full demand would be ~178,200 tokens
-    budget 100,673 of 99,999  [EXHAUSTED]
+  population: 430 planner calls (177 reached the model), 140,703 tokens, 254 fallbacks
+    budget 140,703 of 139,999  [EXHAUSTED]
 
-  tail: 1527 planner calls (1137 reached the model), 900,634 tokens, 408 fallbacks
-    ~792 tokens/call; full demand would be ~1,209,384 tokens
-    budget 900,634 of 900,000  [EXHAUSTED]
+  tail: 1196 planner calls (716 reached the model), 560,765 tokens, 494 fallbacks
+    budget 560,765 of 560,000  [EXHAUSTED]
 
 NOTE: these are simulation results. The world model encodes the hypothesis that
 retry timing matters, so it cannot be used to confirm that hypothesis -- only to

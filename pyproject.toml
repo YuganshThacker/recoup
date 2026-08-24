@@ -12,6 +12,8 @@ dependencies = []
 # max_completion_tokens is why the openai floor is 1.45 -- the reasoning models
 # reject the older max_tokens parameter.
 openai = ["openai>=1.45"]
+# The Razorpay adapter speaks plain HTTP; httpx2 is the only thing it needs.
+razorpay = ["httpx2>=0.1"]
 anthropic = ["anthropic>=0.69"]
 dev = ["pytest>=8.0", "ruff>=0.6", "mypy>=1.11"]
 
