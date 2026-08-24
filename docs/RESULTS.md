@@ -156,6 +156,93 @@ language understanding.
 
 ---
 
+## R3 — does the model read customer messages better than keywords?
+
+**153 labelled messages · `gpt-4.1-mini` · reference date 2026-08-25.**
+Raw output: `reports/run_inbound_bench.txt`.
+
+R2 asked whether the model beats rules at *timing* and answered no. This asks the
+opposite question on the capability rules genuinely lack. No rule turns *"can't
+pay today, salary comes Friday, please stop retrying"* into a promise dated to
+Friday **and** a suppression flag.
+
+| metric | keyword baseline | model | delta |
+|---|---|---|---|
+| intent | 80% | 91% | +11% |
+| promised date | 84% | 95% | +10% |
+| suppression | 97% | 99% | +1% |
+| **policy facts** | **78%** | **90%** | **+12%** |
+
+**McNemar (exact, paired): b=27, c=8, p=0.0019.** Significant at 0.05.
+
+Stable across runs: policy facts 90%, 90%, 91%; p = 0.0013, 0.0013, 0.0019.
+
+### Why McNemar and not a two-proportion test
+
+Both approaches read the *same* 153 messages. An unpaired test would count the
+~110 cases they decide identically as evidence, overstating it. Only the
+disagreements carry information.
+
+### Why `policy facts` is the metric that matters
+
+Intent is a proxy. Getting the intent right and the date wrong still schedules a
+retry on the wrong day; getting suppression wrong contacts someone who asked not
+to be. `policy facts` scores the whole reading — the exact dict that lands in
+`PolicyContext` — and is the only column that reflects what the system does.
+
+### Where each one loses
+
+| | baseline | model |
+|---|---|---|
+| relative dates | 15/26 | **23/26** |
+| traps (misleading keyword) | 10/28 | **21/28** |
+| multi-intent | **12/12** | 9/12 |
+
+The failure modes are structurally different. Keywords break on phrasing and on
+negation — *"I already paid last month's invoice but not this one, I'll clear
+this by Friday"* reads as a dispute. The model breaks on our multi-intent
+labelling convention, where the baseline's keyword precedence happens to encode
+the right answer by accident of ordering.
+
+### Two corrections made while running this
+
+Both moved the result *against* the model, and both are why the number is
+believable:
+
+1. **n=47 gave p=0.2266 — not significant.** The first corpus was too small.
+   Reporting +11% from it would have held the flattering result to a weaker
+   standard than R2, which was held to confidence intervals and three rejected
+   runs. The corpus was expanded to 153.
+2. **The baseline was handicapped.** It discarded an extracted date whenever the
+   intent was not `promise_to_pay`, contradicting the documented multi-intent
+   convention, which cost it 12 cases outright. Fixed; the effect fell from +19
+   to +12 and p from <0.0001 to 0.0019.
+
+A third disclosure: the multi-intent convention was added to the extraction
+prompt *after* an initial run where the model read such messages as promises.
+That is post-hoc. The baseline already encoded the same precedence, so stating
+it removed an asymmetry rather than creating one — but it is post-hoc and is
+recorded as such.
+
+### What this does not establish
+
+The corpus and its labels were written by the same author as the system under
+test. That is a real weakness, stated in `sim/inbound_corpus.py`. Three things
+push against it: the baseline is deliberately competent (80% intent, 97%
+suppression) and pinned by a test at >70%; most of the corpus is ordinary
+messages either approach should read; and every label is checkable from the text
+alone. It is not a substitute for real customer messages.
+
+### The two results together
+
+The model **loses at timing by 21 points** and **wins at understanding by 12**.
+That is not a contradiction — it is the reason the architecture routes rather
+than delegates. Rules keep control of scheduling; the model is used where
+language understanding is the actual task, and its output lands as *facts* in a
+context the policy engine already gates.
+
+---
+
 ## Batch C — the live Razorpay integration
 
 **50 cases against the live test API.** Ledger: `reports/batch_c_ledger.json`.
@@ -215,8 +302,11 @@ The system beats the platform default by **+21.6 points and ₹96,908 incrementa
 on a 900-case batch. Substantially all of that comes from decline-conditional
 retry timing, which is **rules**.
 
-The model, measured on the population where it was actually applied, is
-**worse than those rules by 21 points**. The correct product decision on this
-evidence is not to use it for action selection — and the reason we can say that
-with a number attached is that the architecture routes the model to a bounded
-tail and randomises within it, rather than assuming the model helps.
+The model, measured on the population where it was actually applied, is **worse
+than those rules by 21 points** at choosing when to act — and **better than a
+competent keyword baseline by 12 points** at reading what a customer wrote.
+
+So the correct product decision is not "use AI" or "don't". It is: keep
+deterministic rules in charge of timing, and use the model for the one job rules
+cannot do. We can say that with numbers attached because the architecture routes
+the model to a bounded tail and measures it there, instead of assuming it helps.

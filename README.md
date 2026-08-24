@@ -13,11 +13,12 @@ engine has not permitted.
 > AI helps, and when it doesn't.**
 >
 > The recovery system beat the platform default by **+21.6 points** (₹96,908
-> incremental, 95% CI [+15.4, +27.7]). When we isolated the language model's own
-> contribution, it made recovery **21.2 points worse** — so the system keeps
-> deterministic rules in charge and routes the model only where it earns its
-> place. Both numbers are below, with intervals, from runs whose raw output is
-> committed.
+> incremental, 95% CI [+15.4, +27.7]). We then measured the language model's own
+> contribution twice: it made retry *timing* **21.2 points worse** than rules, and
+> made *reading customer messages* **12 points better** than a competent keyword
+> baseline. So rules keep control of timing, and the model is used only where
+> language is the actual task. Every number below is from a run whose raw output
+> is committed.
 
 | what runs against live Razorpay | what is simulated |
 |---|---|
@@ -78,7 +79,34 @@ pre-debit notice had already matured, burning 15 of a 21-day window. In a proble
 where all the lift comes from acting at the right moment, an agent that defers
 loses money.
 
-Full analysis, including six named limitations: **[docs/RESULTS.md](docs/RESULTS.md)**
+### R3 — does the model read customer messages better than keywords?
+
+**153 labelled messages · [raw output](reports/run_inbound_bench.txt)**
+
+| metric | keyword baseline | model | delta |
+|---|---|---|---|
+| intent | 80% | 91% | +11% |
+| promised date | 84% | 95% | +10% |
+| **policy facts** | **78%** | **90%** | **+12%** |
+
+**McNemar (exact, paired): p = 0.0019.** The baseline is deliberately competent —
+multiple phrasings per intent, Hinglish spellings, a working relative-date
+parser — and a test pins it above 70% so it cannot rot into a strawman.
+
+No rule turns *"can't pay today, salary comes Friday, please stop retrying"* into
+a promise dated to Friday **and** a suppression flag. Keywords break on phrasing
+and negation; the model breaks on multi-intent messages, where the baseline wins
+12/12.
+
+### The two results together
+
+The model **loses at timing by 21 points** and **wins at understanding by 12**.
+That is not a contradiction — it is why the system routes rather than delegates.
+Rules keep control of scheduling; the model handles language, and its output
+lands as *facts* in a context the policy engine already gates.
+
+Full analysis, including limitations and the corrections that moved results
+against the model: **[docs/RESULTS.md](docs/RESULTS.md)**
 
 ---
 

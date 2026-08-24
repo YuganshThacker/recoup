@@ -1,0 +1,59 @@
+=== INBOUND UNDERSTANDING - 153 labelled messages ===
+  model: gpt-4.1-mini   reference date: 2026-08-25 (Tuesday)
+
+  keyword baseline
+    category      intent     date     stop   policy
+    plain          43/45    44/45    45/45    44/45
+    relative       18/26    15/26    26/26    15/26
+    hinglish       24/26    22/26    26/26    22/26
+    trap           11/28    20/28    24/28    10/28
+    multi          12/12    12/12    12/12    12/12
+    ambiguous      14/16    16/16    16/16    16/16
+    OVERALL         80%      84%      97%      78% 
+
+  model (gpt-4.1-mini)
+    category      intent     date     stop   policy
+    plain          45/45    45/45    45/45    45/45
+    relative       26/26    23/26    26/26    23/26
+    hinglish       25/26    25/26    26/26    24/26
+    trap           20/28    25/28    28/28    21/28
+    multi           8/12    11/12    10/12     9/12
+    ambiguous      15/16    16/16    16/16    16/16
+    OVERALL         91%      95%      99%      90% 
+
+  delta (model - baseline)
+    intent        +11%
+    date          +10%
+    suppression   +1%
+    policy facts  +12%
+
+  paired significance on policy facts (McNemar, exact)
+    model right / baseline wrong   b = 27
+    baseline right / model wrong   c = 8
+    two-sided p                    0.0019  significant at 0.05
+
+  model usage: 153 calls, 92,259 tokens, 0 fell back to keywords
+
+  model misreads (14):
+    trap      'salary next week hai lekin abhi mat try karo, band k' -> promise_to_pay (expected request_stop_retries)
+    hinglish  'double paisa kat gaya hai mera' -> unclear (expected dispute_already_paid)
+    trap      "I paid the joining fee, not this month's charge. Wha" -> dispute_already_paid (expected general_question)
+    trap      "Cancel the old card not the subscription, I'll pay o" -> promise_to_pay (expected payment_method_change)
+    trap      'It is not that I already paid, it is that I cannot p' -> unclear (expected promise_to_pay)
+    trap      'My wife already paid hers. Mine failed. Why?' -> dispute_already_paid (expected general_question)
+    trap      'Everyone says already paid, but I genuinely have not' -> dispute_already_paid (expected unclear)
+    trap      'The email said payment done but my bank shows nothin' -> dispute_already_paid (expected general_question)
+
+  baseline misreads (31):
+    relative  'Give me 3 days please' -> unclear (expected promise_to_pay)
+    relative  "in 5 days I'll have the funds" -> unclear (expected promise_to_pay)
+    trap      "I already paid last month's invoice but not this one" -> dispute_already_paid (expected promise_to_pay)
+    trap      'I did not say stop retrying, I said retry after Frid' -> request_stop_retries (expected promise_to_pay)
+    trap      'My friend said he already paid his, but mine is stil' -> dispute_already_paid (expected general_question)
+    trap      "Not asking you to stop, just don't charge the old ca" -> request_stop_retries (expected payment_method_change)
+    plain     "I'll transfer the money on 2026-09-02" -> unclear (expected promise_to_pay)
+    plain     'Send me the invoice copy' -> unclear (expected general_question)
+
+SCOPE. The corpus and its labels were written by the same author as the system
+under test, which is stated in sim/inbound_corpus.py rather than buried. The
+baseline is deliberately competent; where keywords suffice it is meant to score.
