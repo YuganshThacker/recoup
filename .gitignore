@@ -5,6 +5,10 @@ venv/
 .env
 .env.*
 !.env.example
+# Provider consoles hand you credentials as a download. Never committable.
+*.csv
+*_api_keys*
+credentials*
 *.db
 *.sqlite3
 data/batches/

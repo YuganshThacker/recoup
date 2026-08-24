@@ -1,0 +1,287 @@
+[
+  {
+    "actor": "system",
+    "case_id": "batch_c",
+    "cost_micros": null,
+    "event_id": "249c77b2-312f-483b-b366-509a1348480f",
+    "kind": "provider_callback",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:40:10.277495+00:00",
+    "payload": {
+      "by_method": {
+        "card": 5,
+        "fpx": 2,
+        "netbanking": 4,
+        "upi": 2
+      }
+    },
+    "seq": 1,
+    "summary": "live downtime feed: 13 blocking outages"
+  },
+  {
+    "actor": "webhook",
+    "case_id": "batch_c",
+    "cost_micros": null,
+    "event_id": "ff9e57c5-ad1f-4840-bfac-7efba5e92400",
+    "kind": "provider_callback",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:40:10.277554+00:00",
+    "payload": {
+      "event": "payment.failed"
+    },
+    "seq": 2,
+    "summary": "verified webhook accepted"
+  },
+  {
+    "actor": "system",
+    "case_id": "batch_c",
+    "cost_micros": null,
+    "event_id": "e1e97468-d1da-44d1-ba70-050589196479",
+    "kind": "action_refused",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:40:10.277569+00:00",
+    "payload": {},
+    "seq": 3,
+    "summary": "forged signature rejected"
+  },
+  {
+    "actor": "system",
+    "case_id": "batch_c",
+    "cost_micros": null,
+    "event_id": "a6234c79-e5b9-42d7-ae17-315a8734f1f8",
+    "kind": "action_deduped",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:40:10.277578+00:00",
+    "payload": {},
+    "seq": 4,
+    "summary": "replayed delivery dropped"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_000",
+    "cost_micros": null,
+    "event_id": "9d72819f-ca11-4315-8942-bb25490fe149",
+    "kind": "case_detected",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:40:10.347888+00:00",
+    "payload": {
+      "amount_paise": 9900,
+      "status": "created"
+    },
+    "seq": 1,
+    "summary": "order created order_TTj2trPH9iHNbI"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_001",
+    "cost_micros": null,
+    "event_id": "17cedf43-7e2c-4f22-b4a3-3828d1ea5180",
+    "kind": "case_detected",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:40:10.430248+00:00",
+    "payload": {
+      "amount_paise": 19900,
+      "status": "created"
+    },
+    "seq": 1,
+    "summary": "order created order_TTj2twr0ECBFM8"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_002",
+    "cost_micros": null,
+    "event_id": "8ac0693c-0939-4247-bec4-38e63fb464f4",
+    "kind": "case_detected",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:40:10.508501+00:00",
+    "payload": {
+      "amount_paise": 29900,
+      "status": "created"
+    },
+    "seq": 1,
+    "summary": "order created order_TTj2u2az81Gy4Z"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_003",
+    "cost_micros": null,
+    "event_id": "cbd20b1f-30eb-4ce4-b4d2-7b3af9a8ff2a",
+    "kind": "case_detected",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:40:10.616462+00:00",
+    "payload": {
+      "amount_paise": 49900,
+      "status": "created"
+    },
+    "seq": 1,
+    "summary": "order created order_TTj2u8rAemo2YS"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_004",
+    "cost_micros": null,
+    "event_id": "945b1a5e-e5e0-4931-800c-25989b49b997",
+    "kind": "case_detected",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:40:10.724956+00:00",
+    "payload": {
+      "amount_paise": 99900,
+      "status": "created"
+    },
+    "seq": 1,
+    "summary": "order created order_TTj2uIVpJU2XXG"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_005",
+    "cost_micros": null,
+    "event_id": "dcbf88e5-71e5-4b64-bdd9-6e2929d358c7",
+    "kind": "case_detected",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:40:10.767859+00:00",
+    "payload": {
+      "amount_paise": 199900,
+      "status": "created"
+    },
+    "seq": 1,
+    "summary": "order created order_TTj2uM6APFbKyB"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_006",
+    "cost_micros": null,
+    "event_id": "a2b566a9-4c41-4393-8f8e-edabfcab3ca8",
+    "kind": "case_detected",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:40:10.844740+00:00",
+    "payload": {
+      "amount_paise": 9900,
+      "status": "created"
+    },
+    "seq": 1,
+    "summary": "order created order_TTj2uRLsPU8kPm"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_028",
+    "cost_micros": null,
+    "event_id": "d44589a3-8b20-4344-9e04-304c220e3e1b",
+    "kind": "case_detected",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:40:11.325727+00:00",
+    "payload": {
+      "amount_paise": 99900,
+      "status": "created"
+    },
+    "seq": 1,
+    "summary": "order created order_TTj2uwNdR8SYqi"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_029",
+    "cost_micros": null,
+    "event_id": "55fcff86-2269-4f8c-91d4-04a8d6ef5608",
+    "kind": "case_detected",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:40:11.470297+00:00",
+    "payload": {
+      "amount_paise": 199900,
+      "status": "created"
+    },
+    "seq": 1,
+    "summary": "order created order_TTj2v6PbMfoZVP"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_030",
+    "cost_micros": null,
+    "event_id": "a79ffefe-83ff-4cf9-be3b-736e3760e7d9",
+    "kind": "case_detected",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:40:11.529910+00:00",
+    "payload": {
+      "amount_paise": 9900,
+      "status": "created"
+    },
+    "seq": 1,
+    "summary": "order created order_TTj2vBky6aFYFP"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_031",
+    "cost_micros": null,
+    "event_id": "6b0de706-7ea7-4eb6-a0f5-003fe12411a7",
+    "kind": "case_detected",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:40:11.589927+00:00",
+    "payload": {
+      "amount_paise": 19900,
+      "status": "created"
+    },
+    "seq": 1,
+    "summary": "order created order_TTj2vFXvxPbS70"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_032",
+    "cost_micros": null,
+    "event_id": "20dbdeef-1390-4461-b5f9-922454245254",
+    "kind": "case_detected",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:40:11.648283+00:00",
+    "payload": {
+      "amount_paise": 29900,
+      "status": "created"
+    },
+    "seq": 1,
+    "summary": "order created order_TTj2vINBPxu01k"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_033",
+    "cost_micros": null,
+    "event_id": "aa429878-3581-4308-9a53-70b740bda34b",
+    "kind": "case_detected",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:40:11.731224+00:00",
+    "payload": {
+      "amount_paise": 49900,
+      "status": "created"
+    },
+    "seq": 1,
+    "summary": "order created order_TTj2vOWhAPJAbf"
+  },
+  {
+    "actor": "system",
+    "case_id": "live_034",
+    "cost_micros": null,
+    "event_id": "cfc28ea7-cdc1-4c60-b93c-82b4ffa7f5c5",
+    "kind": "case_detected",
+    "latency_ms": null,
+    "model": null,
+    "occurred_at": "2026-08-24T19:40:11.771410+00:00",
+    "payload": {
+      "amount_paise": 99900,
+      "status": "created"
+    },
+    "seq": 1,
+    "summary": "order created order_TTj2vRwLTVzpZr"
+  }
+]
