@@ -16,3 +16,5 @@ data/batches/
 .ruff_cache/
 .mypy_cache/
 .DS_Store
+# Browser automation scratch output
+.playwright-mcp/
