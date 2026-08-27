@@ -163,6 +163,70 @@ def test_it_states_the_amount_from_the_detection_event() -> None:
     assert build_xray("case_x", _clean_case()).amount == "Rs 4,999.00"
 
 
+# --- executions that are messages, not debits ------------------------------
+
+
+def _message_case() -> list[AuditEvent]:
+    """A permitted instrument-update request, executed.
+
+    The runner records pre-debit notices as NOTICE_SENT and *every other*
+    message as ACTION_EXECUTED, so this shape is ordinary. An earlier version
+    of the x-ray read the send as an unauthorised debit and reported an
+    exception on a compliant case.
+    """
+    return [
+        _event(1, EventKind.CASE_DETECTED, "charge failed: debit_instrument_inactive (hard)",
+               {"amount_paise": 49900, "arm": "treatment"}, Actor.WEBHOOK),
+        _event(2, EventKind.POLICY_EVALUATED,
+               "permitted: request_instrument_update via sms [RP_INSTRUMENT_01]",
+               {"action": "request_instrument_update via sms [RP_INSTRUMENT_01]",
+                "proposed_by": "agent", "permitted": True, "gates": _gates()}),
+        _event(3, EventKind.ACTION_EXECUTED, "sent RP_INSTRUMENT_01 via sms",
+               {"message_id": "msg_2", "cost_paise": 20}, Actor.SYSTEM),
+    ]
+
+
+def test_a_permitted_message_execution_is_not_an_exception() -> None:
+    xray = build_xray("case_x", _message_case())
+
+    assert xray.verdict == "clean", [c.detail for c in xray.exceptions]
+
+
+def test_a_message_recorded_as_an_execution_still_counts_as_a_contact() -> None:
+    # The worse half of the same bug: only notices were being checked for
+    # template registration, so payment links and dunning reminders were
+    # escaping C2 entirely.
+    xray = build_xray("case_x", _message_case())
+
+    assert [c.template_id for c in xray.contacts] == ["RP_INSTRUMENT_01"]
+    assert xray.contacts[0].channel == "sms"
+
+
+def test_a_message_is_not_counted_as_an_execution_against_the_instrument() -> None:
+    assert build_xray("case_x", _message_case()).money_actions == ()
+
+
+def test_sending_a_different_template_than_the_one_permitted_is_an_exception() -> None:
+    # Stronger than the check it replaces: permitted A, sent B.
+    events = _message_case()
+    events[2] = _event(3, EventKind.ACTION_EXECUTED, "sent RP_DUNNING_01 via sms",
+                       {"message_id": "msg_2", "cost_paise": 20}, Actor.SYSTEM)
+
+    xray = build_xray("case_x", events)
+
+    assert any(c.code == "C1" and not c.passed for c in xray.checks)
+
+
+def test_a_debit_is_not_covered_by_a_message_permit() -> None:
+    events = _message_case()
+    events[2] = _event(3, EventKind.ACTION_EXECUTED, "debit succeeded",
+                       {"payment_id": "pay_9"}, Actor.SYSTEM)
+
+    xray = build_xray("case_x", events)
+
+    assert any(c.code == "C1" and not c.passed for c in xray.checks)
+
+
 # --- the failing direction, which is the point -----------------------------
 
 

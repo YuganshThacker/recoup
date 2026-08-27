@@ -45,6 +45,13 @@ GATE_NAMES: tuple[str, ...] = (
 
 _TEMPLATE = re.compile(r"\b(RP_[A-Z0-9_]+)\b")
 _CHANNEL = re.compile(r"\bvia (\w+)\b")
+_SENT = re.compile(r"^sent (RP_[A-Z0-9_]+) via (\w+)")
+"""The runner records pre-debit notices as NOTICE_SENT and every *other*
+message as ACTION_EXECUTED with this summary. Both are customer contacts, and
+reading only the first kind let payment links and dunning reminders escape the
+registered-template check entirely."""
+
+_DEBIT = re.compile(r"^debit ")
 
 CAVEATS: tuple[str, ...] = (
     "Ledger timestamps are wall-clock, not the simulated clock the case ran on. "
@@ -132,10 +139,11 @@ def build_xray(case_id: str, events: list[AuditEvent]) -> Xray:
 
     contacts = _contacts(events)
     permits = _permits(events)
-    money = _money_actions(events, permits)
+    executions = _executions(events, permits)
+    money = _debits(executions)
 
     checks = (
-        _c1(money),
+        _c1(executions),
         _c2(contacts),
         _c3(events),
         _c4(events),
@@ -160,10 +168,21 @@ def build_xray(case_id: str, events: list[AuditEvent]) -> Xray:
 # --- reading the ledger ----------------------------------------------------
 
 
+def _is_message(event: AuditEvent) -> bool:
+    """Did this event put something in front of a customer?
+
+    Notices carry their own event kind; everything else the system sends is an
+    ACTION_EXECUTED whose summary names the template.
+    """
+    if event.kind is EventKind.NOTICE_SENT:
+        return True
+    return event.kind is EventKind.ACTION_EXECUTED and _SENT.match(event.summary) is not None
+
+
 def _contacts(events: list[AuditEvent]) -> tuple[Contact, ...]:
     found = []
     for event in events:
-        if event.kind is not EventKind.NOTICE_SENT:
+        if not _is_message(event):
             continue
         template = _TEMPLATE.search(event.summary)
         channel = _CHANNEL.search(event.summary)
@@ -190,30 +209,50 @@ def _permits(events: list[AuditEvent]) -> list[tuple[int, str]]:
     ]
 
 
-def _money_actions(
+def _authority(event: AuditEvent, permits: list[tuple[int, str]]) -> int | None:
+    """The most recent permit that actually covers this execution.
+
+    A debit needs a permit for a debit; a message needs a permit naming *the
+    same template*. Matching every execution against any prior permit would
+    pass a case that was permitted one template and sent another, which is
+    precisely the kind of drift this report exists to catch.
+    """
+    sent = _SENT.match(event.summary)
+    if sent is not None:
+        wanted = sent.group(1)
+        covering = [seq for seq, action in permits if wanted in action]
+    elif _DEBIT.match(event.summary):
+        covering = [seq for seq, action in permits if "retry_debit" in action]
+    else:
+        covering = [seq for seq, _ in permits]
+
+    prior = [seq for seq in covering if seq < event.seq]
+    return prior[-1] if prior else None
+
+
+def _executions(
     events: list[AuditEvent], permits: list[tuple[int, str]]
 ) -> tuple[MoneyAction, ...]:
-    """Executions, each matched to the most recent permit that covers it.
-
-    Matching is by "a debit was permitted before this debit ran", which is what
-    the ledger can support. A stricter pairing would need an authority id on
-    the execution event, which is a change to the measured path.
-    """
-    debit_permits = [seq for seq, action in permits if "retry_debit" in action]
+    """Everything the system carried out, with the decision that authorised it."""
     found = []
     for event in events:
         if event.kind is not EventKind.ACTION_EXECUTED:
             continue
-        prior = [seq for seq in debit_permits if seq < event.seq]
+        authority = _authority(event, permits)
         found.append(
             MoneyAction(
                 seq=event.seq,
                 summary=event.summary,
-                authorised=bool(prior),
-                authority_seq=prior[-1] if prior else None,
+                authorised=authority is not None,
+                authority_seq=authority,
             )
         )
     return tuple(found)
+
+
+def _debits(executions: tuple[MoneyAction, ...]) -> tuple[MoneyAction, ...]:
+    """Only the executions that moved money, for the instrument table."""
+    return tuple(m for m in executions if _DEBIT.match(m.summary))
 
 
 def _tally(events: list[AuditEvent]) -> dict[str, tuple[int, int]]:
