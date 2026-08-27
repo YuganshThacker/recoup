@@ -41,6 +41,10 @@ select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
 # Embedded CSS and JavaScript. Line length is not a meaningful constraint on
 # a template string, and wrapping it would hurt readability of the asset.
 "src/recovery/report/html.py" = ["E501"]
+# The control room page, same reasoning: one self-contained document, where
+# wrapping the embedded CSS and JavaScript would hurt the asset's readability.
+# RUF001: the multiplication sign is deliberate in the repeat-count chip.
+"src/recovery/live/console.py" = ["E501", "RUF001"]
 
 [tool.mypy]
 python_version = "3.11"
