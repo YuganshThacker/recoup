@@ -141,6 +141,43 @@ footer{grid-column:1/3;border-top:1px solid var(--line-hot);background:linear-gr
 .g.fail .name{color:var(--refuse)}
 .g.fail::after{content:"REFUSED";position:absolute;top:10px;right:12px;font-size:8px;letter-spacing:.14em;color:var(--refuse)}
 
+/* ---------- voice ---------- */
+button.call{border-color:#14432b;color:#8ef0bd}
+button.call:hover:not(:disabled){border-color:var(--green);color:#d6ffe9;background:#0b1a12}
+.call-stage{position:fixed;inset:0;z-index:220;background:rgba(3,5,8,.86);display:none;padding:34px 40px}
+.call-stage.open{display:flex;flex-direction:column;gap:14px}
+.call-box{flex:1;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;grid-template-columns:1fr 400px;gap:0;border:1px solid var(--line-hot);background:#080b0f;box-shadow:0 40px 120px rgba(0,0,0,.8)}
+.call-top{grid-column:1/3;border-bottom:1px solid var(--line-hot);padding:13px 18px;display:flex;align-items:center;gap:18px;background:linear-gradient(180deg,#0b1119,#080c11)}
+.call-top .who .n{font-size:13px;color:var(--bright);letter-spacing:.06em}
+.call-top .who .s{font-size:10px;color:var(--dim);margin-top:4px}
+.gpills{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap;max-width:640px;justify-content:flex-end}
+.gp{font-size:8.5px;letter-spacing:.09em;padding:4px 7px;border:1px solid #14432b;color:var(--green);background:rgba(47,212,122,.06);text-transform:uppercase}
+.gp.no{border-color:#4a1f14;color:var(--refuse);background:rgba(255,95,61,.1)}
+.call-top button{margin-left:8px}
+.convo{overflow:auto;padding:18px 22px;display:flex;flex-direction:column;gap:13px;border-right:1px solid var(--line)}
+.say{max-width:76%;padding:11px 14px;font-size:13px;line-height:1.6;animation:in .2s ease-out}
+.say.agent{align-self:flex-start;border-left:2px solid var(--blue);background:#0c141d;color:#d5e4f2}
+.say.caller{align-self:flex-end;border-right:2px solid var(--violet);background:#120f1b;color:#ddd2f5;text-align:right}
+.say .w{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+.say.end{border-left-color:var(--refuse);background:#160c09;color:#ffc4b5}
+.inspect{overflow:auto;padding:16px 18px;background:#06090c;display:flex;flex-direction:column;gap:14px}
+.inspect h3{font-size:9.5px;letter-spacing:.2em;color:var(--mid);font-weight:600;text-transform:uppercase}
+.inspect pre{font-size:10.5px;line-height:1.7;color:var(--text);background:#0b1016;border:1px solid var(--line);padding:11px;overflow-x:auto;white-space:pre-wrap;word-break:break-word}
+.inspect .flag{border-left:2px solid var(--green);background:rgba(47,212,122,.05);padding:9px 12px;font-size:10.5px;line-height:1.65;color:#a9e6c6}
+.inspect .flag b{color:var(--bright);font-weight:600}
+.inspect .fact{font-size:10.5px;color:var(--amber);line-height:1.6}
+.inspect .none{font-size:10.5px;color:var(--dim);line-height:1.6}
+.call-bot{grid-column:1/3;border-top:1px solid var(--line-hot);padding:12px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#090d12}
+.call-bot input{flex:1;min-width:220px;font:inherit;font-size:12px;background:#0d131a;border:1px solid var(--line-hot);color:var(--text);padding:10px 13px}
+.call-bot input:focus{outline:none;border-color:var(--blue)}
+.mic{width:42px;height:42px;padding:0;border-radius:50%;font-size:15px;flex:0 0 auto}
+.mic.on{background:var(--refuse);border-color:var(--refuse);color:#fff;animation:pulse 1.4s infinite}
+.phrases{grid-column:1/3;display:flex;gap:6px;flex-wrap:wrap;padding:0 16px 12px;background:#090d12}
+.phrases button{font-size:9.5px;letter-spacing:.02em;text-transform:none;padding:6px 10px;color:var(--mid)}
+.phrases button.trap{border-color:#4a3a14;color:var(--amber)}
+.call-note{font-size:10px;color:var(--dim);text-align:center;line-height:1.6}
+.call-note b{color:var(--mid);font-weight:400}
+
 /* ---------- red team ---------- */
 button.rt{border-color:#4a1f14;color:#ff9b83}
 button.rt:hover:not(:disabled){border-color:var(--refuse);color:#ffd0c4;background:#1a0d09}
@@ -218,6 +255,7 @@ button.rt:hover:not(:disabled){border-color:var(--refuse);color:#ffd0c4;backgrou
       <div class="pace" id="pace">
         <button data-r="6">6/s</button><button data-r="18" class="on">18/s</button><button data-r="0">MAX</button>
       </div>
+      <button class="call" id="call-open">Call</button>
       <button class="rt" id="rt-open">Red team</button>
       <button class="go" id="run">Run batch</button>
     </div>
@@ -240,6 +278,49 @@ button.rt:hover:not(:disabled){border-color:var(--refuse);color:#ffd0c4;backgrou
     </div>
     <div class="gm" id="gm"></div>
   </footer>
+</div>
+
+<div class="call-stage" id="call-stage">
+  <div class="call-box">
+    <div class="call-top">
+      <div class="who"><div class="n" id="call-who">—</div><div class="s" id="call-sub">—</div></div>
+      <div class="gpills" id="call-gates"></div>
+      <button onclick="hangUp()">Hang up</button>
+    </div>
+    <div class="convo" id="convo"></div>
+    <div class="inspect">
+      <div>
+        <h3 id="insp-head">What the ears returned</h3>
+        <pre id="insp-json">waiting for the first thing the caller says…</pre>
+      </div>
+      <div class="flag" id="insp-flag" style="display:none">
+        <b>No amount field.</b> The figure the agent just spoke came from the case
+        ledger at synthesis time. This contract is the same one the model fills, and
+        it has nowhere to put a rupee value &mdash; so whatever is listening, it
+        cannot state a wrong one.
+      </div>
+      <div>
+        <h3>Facts written to policy</h3>
+        <div id="insp-facts" class="none">none yet</div>
+      </div>
+      <div>
+        <h3>May we still contact them?</h3>
+        <button id="probe" style="margin-top:6px">Try an SMS now</button>
+        <div id="probe-out" class="none" style="margin-top:9px">not tried</div>
+      </div>
+    </div>
+    <div class="call-bot">
+      <button class="mic" id="mic" title="Speak (Chrome)">&#9679;</button>
+      <input id="say-input" placeholder="Type what the caller says, or press the mic…" autocomplete="off">
+      <button id="say-send">Send</button>
+    </div>
+    <div class="phrases" id="phrases"></div>
+  </div>
+  <div class="call-note">
+    The model has <b>ears, not a mouth</b>. Listening runs through
+    <b>agent/inbound.py</b> &mdash; the module R3 measured at +12 pts, p=0.0019.
+    Every word spoken is a registered utterance with slots bound from the ledger.
+  </div>
 </div>
 
 <div class="scrim" id="scrim" onclick="closeRt()"></div>
@@ -428,6 +509,111 @@ document.getElementById("run").onclick=async ev=>{
   }
 };
 
+/* voice */
+const PHRASES=[
+  ["kitna baaki hai",false],
+  ["salary aane ke baad Friday ko kar dunga",false],
+  ["I already paid last month's invoice but not this one, I'll clear this by Friday",true],
+  ["card change karna hai, dusra card use karunga",false],
+  ["please retry band karo, main baad me karunga",false]
+];
+const stage=document.getElementById("call-stage"), convo=document.getElementById("convo");
+let calling=false;
+
+function bubble(cls,who,text){
+  const d=document.createElement("div"); d.className="say "+cls;
+  d.innerHTML='<div class="w"></div><div class="t"></div>';
+  d.querySelector(".w").textContent=who; d.querySelector(".t").textContent=text;
+  convo.appendChild(d); convo.scrollTop=convo.scrollHeight;
+}
+
+function tts(text){
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text); u.lang="en-IN"; u.rate=1.03;
+    const v=speechSynthesis.getVoices().find(v=>/en-IN|India/i.test(v.lang+v.name));
+    if(v) u.voice=v;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+document.getElementById("call-open").onclick=async()=>{
+  stage.classList.add("open"); convo.innerHTML=""; calling=true;
+  document.getElementById("insp-head").textContent="What the ears returned";
+  document.getElementById("insp-json").textContent="waiting for the first thing the caller says…";
+  document.getElementById("insp-flag").style.display="none";
+  document.getElementById("insp-facts").textContent="none yet";
+  document.getElementById("insp-facts").className="none";
+  document.getElementById("probe-out").textContent="not tried";
+  document.getElementById("probe-out").className="none";
+  const r=await(await fetch("/api/voice/open",{method:"POST",headers:{"X-Recoup-Console":"1","Content-Type":"application/json"},body:"{}"})).json();
+  document.getElementById("call-who").textContent=r.merchant+" · "+r.plan+" · "+r.amount+" outstanding";
+  document.getElementById("call-sub").textContent="ears: "+r.ears+"   ·   case "+r.case_id;
+  const pills=document.getElementById("call-gates"); pills.innerHTML="";
+  for(const g of r.gates){
+    const b=document.createElement("span"); b.className="gp"+(g.passed?"":" no");
+    b.textContent=g.gate.replace(/_/g," "); b.title=g.explanation; pills.appendChild(b);
+  }
+  if(!r.placed){ calling=false; bubble("agent end","POLICY","The call was refused before it was placed. "+
+    r.gates.filter(g=>!g.passed).map(g=>g.gate+": "+g.explanation).join("  ")); return; }
+  bubble("agent","AGENT",r.say.text); tts(r.say.text);
+};
+
+async function said(text){
+  if(!text||!calling) return;
+  bubble("caller","CALLER",text);
+  const r=await(await fetch("/api/voice/turn",{method:"POST",headers:{"X-Recoup-Console":"1","Content-Type":"application/json"},body:JSON.stringify({transcript:text})})).json();
+  if(r.error){ bubble("agent end","SYSTEM",r.error); calling=false; return; }
+  document.getElementById("insp-head").textContent="What the ears returned · "+r.heard_by;
+  document.getElementById("insp-json").textContent=JSON.stringify(r.model_output,null,2);
+  document.getElementById("insp-flag").style.display="block";
+  const f=document.getElementById("insp-facts");
+  const keys=Object.keys(r.facts||{});
+  f.className=keys.length?"fact":"none";
+  f.textContent=keys.length?keys.map(k=>k+" = "+r.facts[k]).join("\n"):"none from this turn";
+  bubble("agent"+(r.ends_call?" end":""),"AGENT · heard by "+r.heard_by,r.say.text);
+  tts(r.say.text);
+  if(r.ends_call) calling=false;
+}
+
+document.getElementById("say-send").onclick=()=>{
+  const i=document.getElementById("say-input"); said(i.value.trim()); i.value="";
+};
+document.getElementById("say-input").onkeydown=e=>{ if(e.key==="Enter") document.getElementById("say-send").click(); };
+function hangUp(){ stage.classList.remove("open"); calling=false; try{speechSynthesis.cancel()}catch(e){} }
+
+(function(){
+  const box=document.getElementById("phrases");
+  for(const [text,trap] of PHRASES){
+    const b=document.createElement("button");
+    if(trap){ b.className="trap"; b.title="Keywords read this as a dispute. The model reads a promise. That gap is R3."; }
+    b.textContent=text; b.onclick=()=>said(text); box.appendChild(b);
+  }
+})();
+
+/* microphone: Chrome only, and it routes audio through Google. The typed box
+   beside it is the path that always works. */
+(function(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const mic=document.getElementById("mic");
+  if(!SR){ mic.disabled=true; mic.title="This browser has no SpeechRecognition — type instead"; return; }
+  const rec=new SR(); rec.lang="en-IN"; rec.interimResults=false; rec.maxAlternatives=1;
+  let on=false;
+  rec.onresult=e=>said(e.results[0][0].transcript);
+  rec.onend=()=>{on=false;mic.classList.remove("on")};
+  rec.onerror=()=>{on=false;mic.classList.remove("on")};
+  mic.onclick=()=>{ if(on){rec.stop();return} try{rec.start();on=true;mic.classList.add("on")}catch(e){} };
+})();
+
+document.getElementById("probe").onclick=async ev=>{
+  const out=document.getElementById("probe-out");
+  const r=await(await fetch("/api/voice/probe",{method:"POST",headers:{"X-Recoup-Console":"1"}})).json();
+  if(r.error){ out.className="none"; out.textContent=r.error; return; }
+  out.className=r.permitted?"fact":"none";
+  out.style.color=r.permitted?"var(--amber)":"var(--refuse)";
+  out.textContent=r.summary;
+};
+
 /* red team */
 const rtPanel=document.getElementById("rt-panel"), scrim=document.getElementById("scrim");
 function openRt(){rtPanel.classList.add("open");scrim.classList.add("on")}
@@ -491,7 +677,7 @@ async function openCase(id){
   body.innerHTML=""; body.appendChild(t);
 }
 function closeDrawer(){document.getElementById("drawer").classList.remove("open")}
-addEventListener("keydown",e=>{if(e.key==="Escape"){closeDrawer();closeRt()}});
+addEventListener("keydown",e=>{if(e.key==="Escape"){closeDrawer();closeRt();hangUp()}});
 
 fetch("/api/state").then(r=>r.json()).then(s=>{
   batchSize=s.cases_total; cases();

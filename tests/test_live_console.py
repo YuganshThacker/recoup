@@ -57,6 +57,14 @@ def test_every_event_kind_lands_in_a_lane() -> None:
     assert unmapped == set(), f"these event kinds would never appear: {sorted(unmapped)}"
 
 
+def test_the_call_inspector_does_not_claim_a_model_answered() -> None:
+    # The console runs keyword ears without an API key. A panel headed "what
+    # the model returned" while keywords are answering would misreport the one
+    # comparison R3 exists to make.
+    assert "What the model returned" not in PAGE
+    assert "What the ears returned" in PAGE
+
+
 def test_write_requests_from_the_page_carry_the_console_header() -> None:
     # Without it the run button 403s against its own server.
     assert '"X-Recoup-Console"' in PAGE

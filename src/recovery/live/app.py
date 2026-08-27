@@ -9,13 +9,17 @@ which is what lets the console watch without being part of what it watches.
 
 from __future__ import annotations
 
+import os
 import threading
+import uuid
+from datetime import UTC, datetime
 from typing import Any
 
 from recovery.agent.planner import AgentPlanner
 from recovery.agent.router import AgentTailArms
 from recovery.batch.runner import CaseOutcome, run_batch
-from recovery.domain.events import Ledger
+from recovery.domain.events import Actor, Ledger
+from recovery.domain.money import format_inr
 from recovery.live.broadcast import BroadcastLedger
 from recovery.live.console import render_console
 from recovery.live.demo import DEMO_SEED, DemoClient
@@ -28,8 +32,18 @@ from recovery.live.server import (
     html_response,
     json_response,
 )
+from recovery.live.voice import (
+    CallFacts,
+    VoiceSession,
+    demo_facts,
+    keyword_ears,
+    model_ears,
+)
 from recovery.planner.rules import DeclineConditionalPlanner, PlatformDefaultPlanner
+from recovery.policy.actions import ActionKind, Channel, ProposedAction
+from recovery.policy.engine import PolicyEngine
 from recovery.sim.generator import generate
+from recovery.templates import bind_variables
 
 DEFAULT_DEMO_CASES = 24
 """Enough to fill the screen and finish inside a demo beat. The measured
@@ -38,6 +52,45 @@ batches are 900 and 1,600; this is a stage, not an experiment."""
 STREAM_REPLAY = 200
 """Events a joining viewer is given, so refreshing mid-run is not a blank
 screen."""
+
+
+class NoCallInProgress(Exception):
+    """Asked to act on a call that is not open."""
+
+
+def _gate_payload(result: Any) -> dict[str, Any]:
+    return {
+        "gate": result.gate.value,
+        "passed": result.passed,
+        "code": result.code.value if result.code else None,
+        "explanation": result.explanation,
+        "remediation": result.remediation.value if result.remediation else None,
+    }
+
+
+def _line_payload(line: Any) -> dict[str, Any] | None:
+    if line is None:
+        return None
+    return {"node": line.node.value, "text": line.text, "ends_call": line.ends_call}
+
+
+def _ears() -> tuple[Any, str]:
+    """Model ears when a key is present, the measured baseline otherwise.
+
+    Named rather than hidden. R3's whole result is the gap between these two,
+    so a console that quietly ran keywords while the narration said "model"
+    would be misreporting the one number this feature rests on.
+    """
+    if not os.environ.get("OPENAI_API_KEY"):
+        return keyword_ears, "keywords (baseline)"
+    try:
+        from recovery.agent.inbound import InboundExtractor
+        from recovery.agent.openai_client import DEFAULT_MODEL, OpenAIClient
+
+        extractor = InboundExtractor(OpenAIClient(model=DEFAULT_MODEL))
+    except Exception:  # the SDK is an optional extra; absence is not an error
+        return keyword_ears, "keywords (openai extra not installed)"
+    return model_ears(extractor, name=DEFAULT_MODEL), DEFAULT_MODEL
 
 
 class ControlRoom:
@@ -54,6 +107,9 @@ class ControlRoom:
         self._finished.set()
         self._outcomes: list[CaseOutcome] = []
         self._error: str | None = None
+        self._call: VoiceSession | None = None
+        self._ended_call: VoiceSession | None = None
+        self._call_lock = threading.Lock()
 
     # --- lifecycle ---------------------------------------------------------
 
@@ -74,6 +130,10 @@ class ControlRoom:
 
         threading.Thread(target=self._run, daemon=True).start()
         return True
+
+    @property
+    def _last_call(self) -> VoiceSession | None:
+        return self._ended_call
 
     def _run(self) -> None:
         try:
@@ -125,6 +185,94 @@ class ControlRoom:
                 "error": self._error,
                 "viewers": self.store.subscriber_count,
             }
+
+    # --- the call ----------------------------------------------------------
+
+    def open_call(self, *, amount_paise: int | None = None) -> dict[str, Any]:
+        """Place a recovery call, gates first.
+
+        A new session replaces any previous one. The alternative -- refusing
+        while an old call is open -- would strand the demo behind a call
+        nobody hung up.
+        """
+        facts = demo_facts()
+        if amount_paise is not None:
+            facts = CallFacts(
+                merchant=facts.merchant,
+                plan=facts.plan,
+                amount_paise=amount_paise,
+                due_date=facts.due_date,
+            )
+        ears, ears_name = _ears()
+        session = VoiceSession(
+            case_id=f"voice:{uuid.uuid4().hex[:8]}",
+            facts=facts,
+            ledger=self.ledger,
+            now=datetime.now(UTC),
+            ears=ears,
+        )
+        opened = session.open()
+        with self._call_lock:
+            self._call = session if opened.placed else None
+            self._ended_call = session
+
+        return {
+            "placed": opened.placed,
+            "case_id": session.case_id,
+            "ears": ears_name,
+            "amount": format_inr(facts.amount),
+            "merchant": facts.merchant,
+            "plan": facts.plan,
+            "gates": [_gate_payload(r) for r in opened.decision.results],
+            "say": _line_payload(opened.greeting),
+        }
+
+    def call_turn(self, transcript: str) -> dict[str, Any]:
+        """One exchange on the open call."""
+        with self._call_lock:
+            session = self._call
+        if session is None:
+            raise NoCallInProgress("no call is in progress")
+
+        turn = session.turn(transcript)
+        if turn.ends_call:
+            with self._call_lock:
+                self._ended_call, self._call = session, None
+        return {
+            "heard": turn.heard,
+            "heard_by": turn.heard_by,
+            "model_output": turn.model_output,
+            "facts": {k: str(v) for k, v in turn.facts.items()},
+            "say": _line_payload(turn.say),
+            "ends_call": turn.ends_call,
+        }
+
+    def probe_contact(self) -> dict[str, Any]:
+        """Try to send an SMS against the call's current context.
+
+        The closing beat: once a caller has said stop, this is refused by
+        gate_suppression -- evaluated live, against the context the call
+        itself updated, not by a job that runs later.
+        """
+        with self._call_lock:
+            session = self._call or self._last_call
+        if session is None:
+            raise NoCallInProgress("no call to probe")
+
+        action = ProposedAction(
+            kind=ActionKind.SEND_REMINDER,
+            channel=Channel.SMS,
+            template_id="RP_DUNNING_01",
+            variables=bind_variables("RP_DUNNING_01"),
+            proposed_by=Actor.OPERATOR,
+            rationale="probe: may we still contact this customer?",
+        )
+        decision = PolicyEngine().evaluate_and_record(action, session.context, self.ledger)
+        return {
+            "permitted": decision.permitted,
+            "summary": decision.explain(),
+            "gates": [_gate_payload(r) for r in decision.results],
+        }
 
     def timeline(self, case_id: str) -> list[dict[str, Any]]:
         """Full replayable history for one case."""
@@ -191,6 +339,25 @@ def build_router(room: ControlRoom) -> Router:
             }
         )
 
+    def voice_open(request: Request, **_params: str) -> Response:
+        amount = request.json().get("amount_paise")
+        return json_response(room.open_call(amount_paise=int(amount) if amount else None))
+
+    def voice_turn(request: Request, **_params: str) -> Response:
+        transcript = str(request.json().get("transcript", "")).strip()
+        if not transcript:
+            return json_response({"error": "nothing was said"}, status=400)
+        try:
+            return json_response(room.call_turn(transcript))
+        except NoCallInProgress as exc:
+            return json_response({"error": str(exc)}, status=409)
+
+    def voice_probe(_request: Request, **_params: str) -> Response:
+        try:
+            return json_response(room.probe_contact())
+        except NoCallInProgress as exc:
+            return json_response({"error": str(exc)}, status=409)
+
     def case(_request: Request, **params: str) -> Response:
         events_ = room.timeline(params["case_id"])
         if not events_:
@@ -204,4 +371,7 @@ def build_router(room: ControlRoom) -> Router:
     router.get("/api/case/<case_id>", case)
     router.get("/api/redteam", redteam_list)
     router.post("/api/redteam/<slug>", redteam_run)
+    router.post("/api/voice/open", voice_open)
+    router.post("/api/voice/turn", voice_turn)
+    router.post("/api/voice/probe", voice_probe)
     return router
