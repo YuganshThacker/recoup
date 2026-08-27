@@ -205,6 +205,31 @@ def test_an_unknown_case_is_404() -> None:
     assert response.status == 404  # type: ignore[attr-defined]
 
 
+def test_the_downtime_panel_is_readable_without_credentials() -> None:
+    # The console has to start with nothing configured, and the panel has to
+    # say why it is empty rather than imply an all-clear.
+    payload = _payload(_get(build_router(ControlRoom()), "/api/downtime"))
+
+    assert payload["outages"] == []
+    assert payload["available"] in (True, False)
+    if payload["available"] is False:
+        assert payload["reason"]
+
+
+def test_the_cold_open_is_served() -> None:
+    response = _get(build_router(ControlRoom()), "/hero")
+
+    assert response.status == 200  # type: ignore[attr-defined]
+    assert b"RECOUP" in response.body  # type: ignore[attr-defined]
+
+
+def test_hero_media_is_404_when_no_clip_is_present() -> None:
+    room = ControlRoom()
+    room.assets = room.assets / "definitely-not-here"
+
+    assert _get(build_router(room), "/hero/media").status == 404  # type: ignore[attr-defined]
+
+
 def test_the_event_stream_is_an_sse_response() -> None:
     response = _get(build_router(ControlRoom()), "/api/events")
 

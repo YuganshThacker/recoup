@@ -24,6 +24,7 @@ from collections.abc import Callable, Generator, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qsl, urlsplit
 
@@ -91,6 +92,56 @@ def json_response(payload: Any, status: int = 200) -> Response:
 
 def html_response(markup: str, status: int = 200) -> Response:
     return Response(status=status, body=markup.encode(), content_type="text/html; charset=utf-8")
+
+
+def media_response(path: Path, content_type: str, *, range_header: str | None) -> Response:
+    """Serve one file, honouring a byte range when the browser asks for one.
+
+    Chrome requests a range for ``<video>`` and handles a plain 200 unevenly.
+    Range support is a dozen lines and the difference between a cold open that
+    plays and one that stalls in front of a room.
+    """
+    data = path.read_bytes()
+    total = len(data)
+    span = _parse_range(range_header, total)
+    if span is None:
+        return Response(
+            body=data,
+            content_type=content_type,
+            headers={"Accept-Ranges": "bytes", "Cache-Control": "no-store"},
+        )
+
+    start, end = span
+    return Response(
+        status=206,
+        body=data[start : end + 1],
+        content_type=content_type,
+        headers={
+            "Accept-Ranges": "bytes",
+            "Content-Range": f"bytes {start}-{end}/{total}",
+            "Cache-Control": "no-store",
+        },
+    )
+
+
+def _parse_range(header: str | None, total: int) -> tuple[int, int] | None:
+    """``bytes=start-end`` into an inclusive span, or None for the whole file.
+
+    Anything malformed, unsatisfiable, or multi-range falls back to the whole
+    file rather than erroring -- a partial-content negotiation is not worth
+    failing a demo over.
+    """
+    if not header or not header.startswith("bytes=") or "," in header or total == 0:
+        return None
+    first, _, last = header[len("bytes=") :].partition("-")
+    try:
+        start = int(first) if first else max(total - int(last), 0)
+        end = int(last) if (first and last) else total - 1
+    except ValueError:
+        return None
+    if start < 0 or start >= total or end < start:
+        return None
+    return start, min(end, total - 1)
 
 
 def _no_store(response: Response) -> Response:

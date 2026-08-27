@@ -45,8 +45,10 @@ select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
 # wrapping the embedded CSS and JavaScript would hurt the asset's readability.
 # RUF001: the multiplication sign is deliberate in the repeat-count chip.
 "src/recovery/live/console.py" = ["E501", "RUF001"]
-# The printable compliance document, same reasoning as the report and console.
+# The printable compliance document and the cold open, same reasoning as the
+# report and console: embedded CSS and markup, where wrapping hurts the asset.
 "src/recovery/live/xray_page.py" = ["E501"]
+"src/recovery/live/hero.py" = ["E501"]
 
 [tool.mypy]
 python_version = "3.11"

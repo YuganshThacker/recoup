@@ -13,6 +13,7 @@ import os
 import threading
 import uuid
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 from recovery.agent.planner import AgentPlanner
@@ -23,6 +24,8 @@ from recovery.domain.money import format_inr
 from recovery.live.broadcast import BroadcastLedger
 from recovery.live.console import render_console
 from recovery.live.demo import DEMO_SEED, DemoClient
+from recovery.live.downtime import DowntimeSource
+from recovery.live.hero import MEDIA_TYPES, find_hero_media, render_hero
 from recovery.live.redteam import UnknownAttack, catalogue, run_attack
 from recovery.live.server import (
     Request,
@@ -31,6 +34,7 @@ from recovery.live.server import (
     event_stream,
     html_response,
     json_response,
+    media_response,
 )
 from recovery.live.voice import (
     CallFacts,
@@ -50,6 +54,10 @@ from recovery.templates import bind_variables
 DEFAULT_DEMO_CASES = 24
 """Enough to fill the screen and finish inside a demo beat. The measured
 batches are 900 and 1,600; this is a stage, not an experiment."""
+
+ASSET_DIR = Path(__file__).resolve().parents[3] / "assets"
+"""Where a cold-open clip goes. Outside the package: it is a demo asset, not
+code, and it should not end up in a wheel."""
 
 STREAM_REPLAY = 200
 """Events a joining viewer is given, so refreshing mid-run is not a blank
@@ -109,6 +117,8 @@ class ControlRoom:
         self._finished.set()
         self._outcomes: list[CaseOutcome] = []
         self._error: str | None = None
+        self.downtime = DowntimeSource.from_env()
+        self.assets = ASSET_DIR
         self._call: VoiceSession | None = None
         self._ended_call: VoiceSession | None = None
         self._call_lock = threading.Lock()
@@ -351,6 +361,29 @@ def build_router(room: ControlRoom) -> Router:
         report = build_xray(case_id, room.store.read_case(case_id))
         return html_response(render_xray(report), status=200 if report.events else 404)
 
+    def downtime(_request: Request, **_params: str) -> Response:
+        return json_response(room.downtime.view().payload())
+
+    def hero(_request: Request, **_params: str) -> Response:
+        return html_response(render_hero(media=find_hero_media(room.assets)))
+
+    def hero_media(request: Request, **_params: str) -> Response:
+        """Serve the cold-open clip, if there is one.
+
+        The only file this server reads off disk, and it takes no path
+        parameter: the filename comes from a fixed allowlist, so there is no
+        user input for a traversal to travel in.
+        """
+        name = find_hero_media(room.assets)
+        if name is None:
+            return json_response({"error": "no hero media"}, status=404)
+        path = room.assets / name
+        return media_response(
+            path,
+            MEDIA_TYPES.get(path.suffix, "application/octet-stream"),
+            range_header=request.header("Range"),
+        )
+
     def voice_open(request: Request, **_params: str) -> Response:
         amount = request.json().get("amount_paise")
         return json_response(room.open_call(amount_paise=int(amount) if amount else None))
@@ -382,6 +415,9 @@ def build_router(room: ControlRoom) -> Router:
     router.post("/api/run", run)
     router.get("/api/case/<case_id>", case)
     router.get("/case/<case_id>/xray", xray)
+    router.get("/api/downtime", downtime)
+    router.get("/hero", hero)
+    router.get("/hero/media", hero_media)
     router.get("/api/redteam", redteam_list)
     router.post("/api/redteam/<slug>", redteam_run)
     router.post("/api/voice/open", voice_open)

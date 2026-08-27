@@ -46,18 +46,19 @@ body::after{
   content:""; position:fixed; inset:0; pointer-events:none; z-index:9999; opacity:.035;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/></filter><rect width='140' height='140' filter='url(%23n)'/></svg>");
 }
-#app{position:relative;z-index:1;height:100%;display:grid;grid-template-rows:auto minmax(0,1fr) auto;grid-template-columns:1fr 336px}
+#app{position:relative;z-index:1;height:100%;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;grid-template-columns:1fr 336px}
 
 /* ---------- header instrument bar ---------- */
 header{grid-column:1/3;border-bottom:1px solid var(--line-hot);background:linear-gradient(180deg,#0b1119,#080c11);display:flex;align-items:stretch}
-.brand{padding:14px 20px;border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;min-width:232px}
-.brand h1{font-size:15px;font-weight:700;letter-spacing:.26em;color:var(--bright)}
+.brand{padding:13px 17px;border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;min-width:0;flex:0 0 auto}
+.brand h1{font-size:14px;font-weight:700;letter-spacing:.2em;color:var(--bright);white-space:nowrap}
 .brand h1 em{font-style:normal;color:var(--blue)}
 .brand .sub{font-size:9.5px;letter-spacing:.2em;color:var(--dim);margin-top:4px;text-transform:uppercase}
-.readouts{display:flex;flex:1;min-width:0;overflow:hidden}
-.ro{padding:12px 22px;border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;min-width:150px;position:relative;cursor:help}
-.ro .k{font-size:9px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase}
-.ro .v{font-size:23px;font-weight:600;color:var(--bright);margin-top:5px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.readouts{display:flex;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none}
+.readouts::-webkit-scrollbar{display:none}
+.ro{padding:11px 13px;border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;min-width:120px;flex:0 0 auto;position:relative;cursor:help}
+.ro .k{font-size:8.5px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;white-space:nowrap}
+.ro .v{font-size:18px;font-weight:600;color:var(--bright);margin-top:5px;font-variant-numeric:tabular-nums;letter-spacing:-.01em;white-space:nowrap}
 .ro.money .v{color:var(--green)}
 .ro.refuse .v{color:var(--refuse)}
 .ro.gates .v{color:var(--blue)}
@@ -66,8 +67,8 @@ header{grid-column:1/3;border-bottom:1px solid var(--line-hot);background:linear
   background:#0e1620; border:1px solid var(--line-hot); border-left:2px solid var(--blue);
   padding:9px 11px; font-size:10px; line-height:1.55; color:var(--mid); box-shadow:0 18px 40px rgba(0,0,0,.7);
 }
-.controls{margin-left:auto;display:flex;align-items:center;gap:12px;padding:0 18px;border-left:1px solid var(--line);flex:0 0 auto}
-button{font:inherit;color:var(--text);background:#101821;border:1px solid var(--line-hot);padding:8px 16px;cursor:pointer;letter-spacing:.14em;font-size:10px;text-transform:uppercase;transition:.14s;white-space:nowrap}
+.controls{margin-left:auto;display:flex;align-items:center;gap:9px;padding:0 14px;border-left:1px solid var(--line);flex:0 0 auto}
+button{font:inherit;color:var(--text);background:#101821;border:1px solid var(--line-hot);padding:8px 13px;cursor:pointer;letter-spacing:.14em;font-size:10px;text-transform:uppercase;transition:.14s;white-space:nowrap}
 button:hover:not(:disabled){border-color:var(--blue);color:var(--bright);background:#13202e}
 button:disabled{opacity:.35;cursor:not-allowed}
 button.go{border-color:var(--blue-dim);color:#bcdcff}
@@ -79,6 +80,19 @@ button.go{border-color:var(--blue-dim);color:#bcdcff}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--dim)}
 .dot.on{background:var(--green);box-shadow:0 0 0 0 rgba(47,212,122,.6);animation:pulse 1.8s infinite}
 @keyframes pulse{70%{box-shadow:0 0 0 9px rgba(47,212,122,0)}100%{box-shadow:0 0 0 0 rgba(47,212,122,0)}}
+
+/* ---------- live downtime strip ---------- */
+.dt{grid-column:1/3;border-bottom:1px solid var(--line);background:#090d12;
+    padding:8px 20px;display:flex;align-items:center;gap:14px;font-size:10.5px;overflow:hidden}
+.dt .tag{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);flex:0 0 auto}
+.dt .tag b{color:var(--blue);font-weight:600}
+.dt .chips{display:flex;gap:5px;flex:1;min-width:0;overflow:hidden;flex-wrap:wrap;max-height:20px}
+.dt .oc{font-size:9.5px;letter-spacing:.05em;padding:3px 7px;border:1px solid #3a2a10;
+        color:var(--amber);background:rgba(255,176,32,.06);white-space:nowrap;flex:0 0 auto}
+.dt .oc.blocking{border-color:#4a1f14;color:var(--refuse);background:rgba(255,95,61,.08)}
+.dt .oc i{font-style:normal;color:var(--dim);margin-right:5px}
+.dt .when{font-size:9px;color:#3f4e5e;flex:0 0 auto;letter-spacing:.06em}
+.dt .off{color:var(--dim);font-size:10px}
 
 /* ---------- lanes ---------- */
 main{display:grid;grid-template-columns:repeat(5,1fr);overflow:hidden;min-height:0;border-right:1px solid var(--line-hot)}
@@ -125,13 +139,13 @@ aside{display:flex;flex-direction:column;overflow:hidden;min-height:0;background
 
 /* ---------- gate matrix ---------- */
 footer{grid-column:1/3;border-top:1px solid var(--line-hot);background:linear-gradient(0deg,#0b1119,#080c11);display:flex;align-items:stretch}
-.gm-h{padding:11px 18px;border-right:1px solid var(--line);min-width:232px;display:flex;flex-direction:column;justify-content:center}
+.gm-h{padding:10px 16px;border-right:1px solid var(--line);min-width:206px;flex:0 0 auto;display:flex;flex-direction:column;justify-content:center}
 .gm-h .t{font-size:10px;letter-spacing:.2em;color:var(--mid);font-weight:600}
 .gm-h .d{font-size:9px;color:var(--dim);margin-top:4px;line-height:1.5}
 .gm{display:flex;flex:1}
-.g{flex:1;border-right:1px solid var(--line);padding:11px 12px;position:relative;transition:background .18s}
+.g{flex:1;min-width:0;border-right:1px solid var(--line);padding:9px 10px;position:relative;transition:background .18s}
 .g:last-child{border-right:0}
-.g .name{font-size:9.5px;letter-spacing:.1em;color:var(--mid);text-transform:uppercase}
+.g .name{font-size:9px;letter-spacing:.06em;color:var(--mid);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .g .tally{font-size:9px;color:var(--dim);margin-top:6px;font-variant-numeric:tabular-nums}
 .g .bar{position:absolute;left:0;bottom:0;height:2px;width:100%;background:var(--line)}
 .g .bar i{display:block;height:100%;width:0;background:var(--refuse);transition:width .3s}
@@ -261,6 +275,12 @@ button.rt:hover:not(:disabled){border-color:var(--refuse);color:#ffd0c4;backgrou
       <button class="go" id="run">Run batch</button>
     </div>
   </header>
+
+  <div class="dt" id="dt">
+    <span class="tag"><b>Razorpay</b> payment downtime &middot; live</span>
+    <span class="chips" id="dt-chips"><span class="off">fetching&hellip;</span></span>
+    <span class="when" id="dt-when"></span>
+  </div>
 
   <main id="lanes"></main>
 
@@ -511,6 +531,40 @@ document.getElementById("run").onclick=async ev=>{
     setTimeout(()=>{b.disabled=false;b.textContent="Run batch"},2500);
   }
 };
+
+/* live downtime. Refreshed on a slow timer -- the provider caches for two
+   minutes anyway, and a console that polls harder than the data changes is
+   spending someone's rate limit to look busy. */
+const DT_REFRESH_MS=90000;
+async function downtime(){
+  const chips=document.getElementById("dt-chips"), when=document.getElementById("dt-when");
+  let d;
+  try{ d=await(await fetch("/api/downtime")).json(); }
+  catch(e){ chips.innerHTML='<span class="off">feed unreachable</span>'; return; }
+  chips.innerHTML="";
+  if(!d.available){
+    const s=document.createElement("span"); s.className="off";
+    s.textContent="not connected — "+(d.reason||"no reason given");
+    chips.appendChild(s); when.textContent=""; return;
+  }
+  if(!d.outages.length){
+    const s=document.createElement("span"); s.className="off";
+    s.textContent="no outages published right now"; chips.appendChild(s);
+  }
+  for(const o of d.outages){
+    const c=document.createElement("span");
+    c.className="oc"+(o.blocking?" blocking":"");
+    c.title=o.method+" · "+o.kind+" · severity "+o.severity+" · "+o.status+
+            (o.blocking?" · gates a retry into this instrument":" · not severe enough to gate");
+    c.innerHTML='<i></i><span></span>';
+    c.querySelector("i").textContent=o.method;
+    c.querySelector("span").textContent=o.instrument;
+    chips.appendChild(c);
+  }
+  const n=Object.values(d.summary).reduce((a,b)=>a+b,0);
+  when.textContent=n+" gating · fetched "+(d.fetched_at||"").slice(11,19)+"Z";
+}
+downtime(); setInterval(downtime,DT_REFRESH_MS);
 
 /* voice */
 const PHRASES=[

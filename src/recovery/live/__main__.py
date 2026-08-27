@@ -16,7 +16,9 @@ import argparse
 import threading
 import webbrowser
 
+from recovery.env import load_dotenv
 from recovery.live.app import DEFAULT_DEMO_CASES, ControlRoom, build_router
+from recovery.live.hero import find_hero_media
 from recovery.live.server import ConsoleServer
 
 
@@ -29,12 +31,29 @@ def main() -> None:
     parser.add_argument("--run", action="store_true", help="Start a batch immediately.")
     args = parser.parse_args()
 
+    # Before the room is built: the downtime panel reads credentials at
+    # construction, and a console that silently ran without them would show
+    # "not connected" for a feed that was configured all along.
+    load_dotenv()
+
     room = ControlRoom(cases=args.cases)
     server = ConsoleServer(build_router(room), host=args.host, port=args.port)
     server.start()
 
     print(f"  Recoup control room  {server.url}")
+    print(f"  cold open            {server.url}/hero")
     print(f"  batch: {args.cases} cases, tail-enriched")
+
+    # Stated at startup rather than discovered on stage.
+    feed = room.downtime.view()
+    if feed.available:
+        gating = sum(feed.summary.values())
+        print(f"  downtime: live, {len(feed.outages)} published, {gating} gating")
+    else:
+        print(f"  downtime: not connected — {feed.reason}")
+
+    hero = find_hero_media(room.assets)
+    print(f"  cold open: {hero}" if hero else "  cold open: no clip (drop one at assets/hero.mp4)")
     if args.host != "127.0.0.1":
         print(f"  WARNING: bound to {args.host}, not loopback. The console can start runs.")
     print("  ctrl-c to stop\n")

@@ -13,6 +13,9 @@ import threading
 import urllib.error
 import urllib.request
 from datetime import UTC, datetime
+from pathlib import Path
+
+import pytest
 
 from recovery.domain.events import Actor, AuditEvent, EventKind
 from recovery.live.broadcast import BroadcastLedger
@@ -24,6 +27,7 @@ from recovery.live.server import (
     Router,
     event_stream,
     json_response,
+    media_response,
 )
 
 
@@ -200,6 +204,53 @@ def test_a_viewer_that_fell_behind_is_told_what_it_missed() -> None:
     stream.close()
 
     assert b"event: gap\n" in frames
+
+
+# --- media -----------------------------------------------------------------
+
+
+def test_a_whole_file_is_served_when_no_range_is_asked_for(tmp_path: Path) -> None:
+    clip = tmp_path / "hero.mp4"
+    clip.write_bytes(b"0123456789")
+
+    response = media_response(clip, "video/mp4", range_header=None)
+
+    assert response.status == 200
+    assert response.body == b"0123456789"
+    assert response.headers["Accept-Ranges"] == "bytes"
+
+
+def test_a_byte_range_is_honoured(tmp_path: Path) -> None:
+    # Chrome asks for one on <video> and handles a flat 200 unevenly.
+    clip = tmp_path / "hero.mp4"
+    clip.write_bytes(b"0123456789")
+
+    response = media_response(clip, "video/mp4", range_header="bytes=2-5")
+
+    assert response.status == 206
+    assert response.body == b"2345"
+    assert response.headers["Content-Range"] == "bytes 2-5/10"
+
+
+def test_an_open_ended_range_runs_to_the_end(tmp_path: Path) -> None:
+    clip = tmp_path / "hero.mp4"
+    clip.write_bytes(b"0123456789")
+
+    response = media_response(clip, "video/mp4", range_header="bytes=7-")
+
+    assert response.body == b"789"
+    assert response.headers["Content-Range"] == "bytes 7-9/10"
+
+
+@pytest.mark.parametrize(
+    "header", ["bytes=99-200", "bytes=abc-def", "kilobytes=1-2", "bytes=5-1", ""]
+)
+def test_an_unusable_range_falls_back_to_the_whole_file(header: str, tmp_path: Path) -> None:
+    # A partial-content negotiation is not worth failing a demo over.
+    clip = tmp_path / "hero.mp4"
+    clip.write_bytes(b"0123456789")
+
+    assert media_response(clip, "video/mp4", range_header=header).status == 200
 
 
 # --- the real socket -------------------------------------------------------
