@@ -39,6 +39,8 @@ from recovery.live.voice import (
     keyword_ears,
     model_ears,
 )
+from recovery.live.xray import build_xray
+from recovery.live.xray_page import render_xray
 from recovery.planner.rules import DeclineConditionalPlanner, PlatformDefaultPlanner
 from recovery.policy.actions import ActionKind, Channel, ProposedAction
 from recovery.policy.engine import PolicyEngine
@@ -339,6 +341,16 @@ def build_router(room: ControlRoom) -> Router:
             }
         )
 
+    def xray(_request: Request, **params: str) -> Response:
+        """The printable attestation for one case.
+
+        Served outside /api because it is a document someone navigates to,
+        bookmarks and prints -- not a fetch the console makes.
+        """
+        case_id = params["case_id"]
+        report = build_xray(case_id, room.store.read_case(case_id))
+        return html_response(render_xray(report), status=200 if report.events else 404)
+
     def voice_open(request: Request, **_params: str) -> Response:
         amount = request.json().get("amount_paise")
         return json_response(room.open_call(amount_paise=int(amount) if amount else None))
@@ -369,6 +381,7 @@ def build_router(room: ControlRoom) -> Router:
     router.get("/api/events", events)
     router.post("/api/run", run)
     router.get("/api/case/<case_id>", case)
+    router.get("/case/<case_id>/xray", xray)
     router.get("/api/redteam", redteam_list)
     router.post("/api/redteam/<slug>", redteam_run)
     router.post("/api/voice/open", voice_open)

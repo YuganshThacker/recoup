@@ -216,7 +216,8 @@ button.rt:hover:not(:disabled){border-color:var(--refuse);color:#ffd0c4;backgrou
 .drawer.open{transform:none}
 .drawer-h{padding:15px 18px;border-bottom:1px solid var(--line-hot);display:flex;align-items:center;gap:12px}
 .drawer-h .t{font-size:12px;color:var(--bright);letter-spacing:.1em}
-.drawer-h button{margin-left:auto}
+.drawer-h .xr{margin-left:auto;text-decoration:none;border:1px solid var(--line-hot);color:var(--blue);padding:8px 14px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;transition:.14s}
+.drawer-h .xr:hover{border-color:var(--blue);background:#13202e;color:#bcdcff}
 .tl{flex:1;overflow:auto;padding:12px 18px}
 .tl table{width:100%;border-collapse:collapse}
 .tl td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top;font-size:11px}
@@ -334,7 +335,9 @@ button.rt:hover:not(:disabled){border-color:var(--refuse);color:#ffd0c4;backgrou
 </div>
 
 <div class="drawer" id="drawer">
-  <div class="drawer-h"><div class="t" id="drawer-t">case</div><button onclick="closeDrawer()">Close</button></div>
+  <div class="drawer-h"><div class="t" id="drawer-t">case</div>
+    <a class="xr" id="drawer-xray" target="_blank" rel="noopener">Compliance x-ray &#8599;</a>
+    <button onclick="closeDrawer()">Close</button></div>
   <div class="tl" id="drawer-b"></div>
 </div>
 
@@ -659,6 +662,7 @@ async function fire(slug,el){
 async function openCase(id){
   const d=document.getElementById("drawer");
   document.getElementById("drawer-t").textContent=id;
+  document.getElementById("drawer-xray").href="/case/"+encodeURIComponent(id)+"/xray";
   const body=document.getElementById("drawer-b");
   body.innerHTML='<div class="empty">loading…</div>';
   d.classList.add("open");
