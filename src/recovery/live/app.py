@@ -19,6 +19,7 @@ from recovery.domain.events import Ledger
 from recovery.live.broadcast import BroadcastLedger
 from recovery.live.console import render_console
 from recovery.live.demo import DEMO_SEED, DemoClient
+from recovery.live.redteam import UnknownAttack, catalogue, run_attack
 from recovery.live.server import (
     Request,
     Response,
@@ -44,6 +45,7 @@ class ControlRoom:
 
     def __init__(self, *, cases: int = DEFAULT_DEMO_CASES, seed: int = DEMO_SEED) -> None:
         self.store = BroadcastLedger()
+        self.ledger = Ledger(self.store)
         self.cases = cases
         self.seed = seed
         self._lock = threading.Lock()
@@ -87,9 +89,7 @@ class ControlRoom:
                 agent=AgentPlanner(client=DemoClient(), fallback=rules),
                 seed=self.seed,
             )
-            outcomes, _provider, _ledger = run_batch(
-                batch, router, workers=1, ledger=Ledger(self.store)
-            )
+            outcomes, _provider, _ledger = run_batch(batch, router, workers=1, ledger=self.ledger)
         except Exception as exc:  # surfaced to the console as a failed run, not swallowed
             with self._lock:
                 self._status = "failed"
@@ -162,6 +162,35 @@ def build_router(room: ControlRoom) -> Router:
             return json_response({"started": True})
         return json_response({"started": False, "error": "a run is already in flight"}, status=409)
 
+    def redteam_list(_request: Request, **_params: str) -> Response:
+        return json_response({"attacks": catalogue()})
+
+    def redteam_run(_request: Request, **params: str) -> Response:
+        """Fire one attack for real, into the room's own ledger.
+
+        Recording into the live ledger is the point: the refusal appears in
+        the GOVERN lane and lights the gate matrix behind the panel, so the
+        audience sees the defence in the same place they have been watching
+        the system work.
+        """
+        try:
+            result = run_attack(params["slug"], ledger=room.ledger)
+        except UnknownAttack as exc:
+            return json_response({"error": str(exc)}, status=404)
+        return json_response(
+            {
+                "slug": result.slug,
+                "title": result.title,
+                "claim": result.claim,
+                "held": result.held,
+                "verdict": result.verdict,
+                "evidence": list(result.evidence),
+                "defended_by": result.defended_by,
+                "test": result.test,
+                "case_id": result.case_id,
+            }
+        )
+
     def case(_request: Request, **params: str) -> Response:
         events_ = room.timeline(params["case_id"])
         if not events_:
@@ -173,4 +202,6 @@ def build_router(room: ControlRoom) -> Router:
     router.get("/api/events", events)
     router.post("/api/run", run)
     router.get("/api/case/<case_id>", case)
+    router.get("/api/redteam", redteam_list)
+    router.post("/api/redteam/<slug>", redteam_run)
     return router

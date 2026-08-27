@@ -54,7 +54,7 @@ header{grid-column:1/3;border-bottom:1px solid var(--line-hot);background:linear
 .brand h1{font-size:15px;font-weight:700;letter-spacing:.26em;color:var(--bright)}
 .brand h1 em{font-style:normal;color:var(--blue)}
 .brand .sub{font-size:9.5px;letter-spacing:.2em;color:var(--dim);margin-top:4px;text-transform:uppercase}
-.readouts{display:flex;flex:1}
+.readouts{display:flex;flex:1;min-width:0;overflow:hidden}
 .ro{padding:12px 22px;border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;min-width:150px;position:relative;cursor:help}
 .ro .k{font-size:9px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase}
 .ro .v{font-size:23px;font-weight:600;color:var(--bright);margin-top:5px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
@@ -66,8 +66,8 @@ header{grid-column:1/3;border-bottom:1px solid var(--line-hot);background:linear
   background:#0e1620; border:1px solid var(--line-hot); border-left:2px solid var(--blue);
   padding:9px 11px; font-size:10px; line-height:1.55; color:var(--mid); box-shadow:0 18px 40px rgba(0,0,0,.7);
 }
-.controls{margin-left:auto;display:flex;align-items:center;gap:14px;padding:0 20px;border-left:1px solid var(--line)}
-button{font:inherit;color:var(--text);background:#101821;border:1px solid var(--line-hot);padding:8px 16px;cursor:pointer;letter-spacing:.14em;font-size:10px;text-transform:uppercase;transition:.14s}
+.controls{margin-left:auto;display:flex;align-items:center;gap:12px;padding:0 18px;border-left:1px solid var(--line);flex:0 0 auto}
+button{font:inherit;color:var(--text);background:#101821;border:1px solid var(--line-hot);padding:8px 16px;cursor:pointer;letter-spacing:.14em;font-size:10px;text-transform:uppercase;transition:.14s;white-space:nowrap}
 button:hover:not(:disabled){border-color:var(--blue);color:var(--bright);background:#13202e}
 button:disabled{opacity:.35;cursor:not-allowed}
 button.go{border-color:var(--blue-dim);color:#bcdcff}
@@ -141,6 +141,39 @@ footer{grid-column:1/3;border-top:1px solid var(--line-hot);background:linear-gr
 .g.fail .name{color:var(--refuse)}
 .g.fail::after{content:"REFUSED";position:absolute;top:10px;right:12px;font-size:8px;letter-spacing:.14em;color:var(--refuse)}
 
+/* ---------- red team ---------- */
+button.rt{border-color:#4a1f14;color:#ff9b83}
+button.rt:hover:not(:disabled){border-color:var(--refuse);color:#ffd0c4;background:#1a0d09}
+.rt-panel{position:fixed;inset:0 auto 0 0;width:560px;max-width:94vw;background:#080a0d;border-right:1px solid #2a140e;z-index:200;transform:translateX(-100%);transition:transform .22s cubic-bezier(.3,.8,.3,1);display:flex;flex-direction:column;box-shadow:30px 0 70px rgba(0,0,0,.75)}
+.rt-panel.open{transform:none}
+.rt-h{padding:15px 18px;border-bottom:1px solid #2a140e;background:linear-gradient(180deg,#140a07,#0a0c0f)}
+.rt-h .t{font-size:12px;letter-spacing:.24em;color:var(--refuse);font-weight:700}
+.rt-h .d{font-size:10px;color:var(--mid);margin-top:7px;line-height:1.6}
+.rt-h .d b{color:var(--text);font-weight:600}
+.rt-h button{position:absolute;top:13px;right:16px}
+.rt-list{flex:1;overflow:auto;padding:10px}
+.atk{border:1px solid var(--line);background:var(--panel-2);margin-bottom:8px}
+.atk-top{padding:11px 13px;display:flex;align-items:center;gap:11px;cursor:pointer}
+.atk-top:hover{background:#111823}
+.atk .ttl{font-size:11.5px;color:var(--bright);font-weight:600}
+.atk .clm{font-size:10px;color:var(--dim);margin-top:4px;line-height:1.5}
+.atk .fire{margin-left:auto;flex:0 0 auto;font-size:9px;padding:6px 12px}
+.atk .badge{margin-left:auto;flex:0 0 auto;font-size:9px;letter-spacing:.14em;padding:5px 10px;border:1px solid}
+.atk .badge.held{color:var(--green);border-color:#14432b;background:rgba(47,212,122,.07)}
+.atk .badge.broke{color:var(--refuse);border-color:#4a1f14;background:rgba(255,95,61,.1)}
+.atk-body{display:none;border-top:1px solid var(--line);padding:11px 13px;background:#070a0e}
+.atk.done .atk-body{display:block}
+.atk .verdict{font-size:11px;color:var(--green);margin-bottom:9px}
+.atk.broke .verdict{color:var(--refuse)}
+.atk .line{font-size:10.5px;color:var(--mid);line-height:1.65;padding-left:13px;position:relative;word-break:break-word}
+.atk .line::before{content:"›";position:absolute;left:0;color:#33404e}
+.atk .line.hit{color:#ffb9a7}
+.atk .cite{margin-top:10px;padding-top:9px;border-top:1px solid var(--line);font-size:9.5px;color:var(--dim);line-height:1.7}
+.atk .cite b{color:var(--blue);font-weight:400}
+.atk .cite i{color:var(--green);font-style:normal}
+.scrim{position:fixed;inset:0;background:rgba(2,4,7,.6);z-index:150;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.on{opacity:1;pointer-events:auto}
+
 /* ---------- drawer ---------- */
 .drawer{position:fixed;inset:0 0 0 auto;width:640px;max-width:92vw;background:#080c11;border-left:1px solid var(--line-hot);z-index:200;transform:translateX(100%);transition:transform .22s cubic-bezier(.3,.8,.3,1);display:flex;flex-direction:column;box-shadow:-30px 0 70px rgba(0,0,0,.7)}
 .drawer.open{transform:none}
@@ -185,6 +218,7 @@ footer{grid-column:1/3;border-top:1px solid var(--line-hot);background:linear-gr
       <div class="pace" id="pace">
         <button data-r="6">6/s</button><button data-r="18" class="on">18/s</button><button data-r="0">MAX</button>
       </div>
+      <button class="rt" id="rt-open">Red team</button>
       <button class="go" id="run">Run batch</button>
     </div>
   </header>
@@ -206,6 +240,16 @@ footer{grid-column:1/3;border-top:1px solid var(--line-hot);background:linear-gr
     </div>
     <div class="gm" id="gm"></div>
   </footer>
+</div>
+
+<div class="scrim" id="scrim" onclick="closeRt()"></div>
+<div class="rt-panel" id="rt-panel">
+  <div class="rt-h" style="position:relative">
+    <div class="t">RED TEAM</div>
+    <div class="d">Six attacks. Each one runs <b>real code</b> and reports what actually happened &mdash; and each cites the test in this repository that asserts the same property. Policy refusals land in the <b>GOVERN</b> lane behind this panel and light the gate matrix.</div>
+    <button onclick="closeRt()">Close</button>
+  </div>
+  <div class="rt-list" id="rt-list"></div>
 </div>
 
 <div class="drawer" id="drawer">
@@ -384,6 +428,48 @@ document.getElementById("run").onclick=async ev=>{
   }
 };
 
+/* red team */
+const rtPanel=document.getElementById("rt-panel"), scrim=document.getElementById("scrim");
+function openRt(){rtPanel.classList.add("open");scrim.classList.add("on")}
+function closeRt(){rtPanel.classList.remove("open");scrim.classList.remove("on")}
+document.getElementById("rt-open").onclick=openRt;
+
+fetch("/api/redteam").then(r=>r.json()).then(({attacks})=>{
+  const list=document.getElementById("rt-list");
+  for(const a of attacks){
+    const el=document.createElement("div"); el.className="atk"; el.id="atk-"+a.slug;
+    el.innerHTML=`<div class="atk-top"><div><div class="ttl"></div><div class="clm"></div></div>
+      <button class="fire">Run</button></div><div class="atk-body"></div>`;
+    el.querySelector(".ttl").textContent=a.title;
+    el.querySelector(".clm").textContent=a.claim;
+    el.querySelector(".fire").onclick=()=>fire(a.slug,el);
+    list.appendChild(el);
+  }
+});
+
+async function fire(slug,el){
+  const btn=el.querySelector(".fire"); btn.disabled=true; btn.textContent="…";
+  let r;
+  try{ r=await(await fetch("/api/redteam/"+slug,{method:"POST",headers:{"X-Recoup-Console":"1"}})).json(); }
+  catch(err){ btn.disabled=false; btn.textContent="Run"; return; }
+  el.classList.add("done"); el.classList.toggle("broke",!r.held);
+  btn.replaceWith(Object.assign(document.createElement("span"),
+    {className:"badge "+(r.held?"held":"broke"),textContent:r.held?"HELD":"BROKE"}));
+  const body=el.querySelector(".atk-body");
+  body.innerHTML='<div class="verdict"></div>';
+  body.querySelector(".verdict").textContent=r.verdict;
+  for(const line of r.evidence){
+    const d=document.createElement("div");
+    d.className="line"+(/^refused |Error|rejected/.test(line)?" hit":"");
+    d.textContent=line; body.appendChild(d);
+  }
+  const cite=document.createElement("div"); cite.className="cite";
+  cite.innerHTML='stopped by <b></b><br>asserted in CI by <i></i>';
+  cite.querySelector("b").textContent=r.defended_by;
+  cite.querySelector("i").textContent=r.test+"()";
+  body.appendChild(cite);
+}
+
 async function openCase(id){
   const d=document.getElementById("drawer");
   document.getElementById("drawer-t").textContent=id;
@@ -405,7 +491,7 @@ async function openCase(id){
   body.innerHTML=""; body.appendChild(t);
 }
 function closeDrawer(){document.getElementById("drawer").classList.remove("open")}
-addEventListener("keydown",e=>{if(e.key==="Escape")closeDrawer()});
+addEventListener("keydown",e=>{if(e.key==="Escape"){closeDrawer();closeRt()}});
 
 fetch("/api/state").then(r=>r.json()).then(s=>{
   batchSize=s.cases_total; cases();
