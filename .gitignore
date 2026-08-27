@@ -18,3 +18,6 @@ data/batches/
 .DS_Store
 # Browser automation scratch output
 .playwright-mcp/
+
+# Cold-open clip for the console. A demo asset, not source, and large.
+assets/hero.*

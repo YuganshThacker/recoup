@@ -433,16 +433,26 @@ class ArmRouter(Protocol):
 
 
 def run_batch(
-    batch: Batch, router: ArmRouter, *, workers: int = 1
+    batch: Batch,
+    router: ArmRouter,
+    *,
+    workers: int = 1,
+    ledger: Ledger | None = None,
 ) -> tuple[list[CaseOutcome], SimulatedProvider, Ledger]:
     """Run every case in a batch through the planner its router selects.
 
     The router owns arm assignment, so the runner stays ignorant of which
     experiment a case belongs to -- it just drives whatever planner it is
     handed. See :mod:`recovery.agent.router`.
+
+    ``ledger`` exists so the live console can watch a run through a
+    :class:`~recovery.live.broadcast.BroadcastLedger` without the runner
+    knowing anyone is watching. Omitting it reproduces the previous behaviour
+    exactly -- a fresh in-memory ledger per batch -- which is what keeps a
+    measured run independent of whether a browser tab was open.
     """
     provider = SimulatedProvider(truths={c.case.case_id: c.truth for c in batch.cases})
-    ledger = Ledger(InMemoryLedger())
+    ledger = ledger if ledger is not None else Ledger(InMemoryLedger())
     engine = PolicyEngine()
 
     amounts = sorted(int(c.case.amount) for c in batch.cases)
