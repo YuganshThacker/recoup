@@ -49,6 +49,7 @@ select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
 # report and console: embedded CSS and markup, where wrapping hurts the asset.
 "src/recovery/live/xray_page.py" = ["E501"]
 "src/recovery/live/hero.py" = ["E501"]
+"src/recovery/live/site.py" = ["E501"]
 
 [tool.mypy]
 python_version = "3.11"
