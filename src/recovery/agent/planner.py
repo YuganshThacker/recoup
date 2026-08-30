@@ -287,6 +287,18 @@ class AgentPlanner:
         summary: str,
         payload: dict[str, object] | None = None,
     ) -> None:
-        """Record to the case ledger when one is available."""
+        """Record to the case ledger when one is available.
+
+        ``at`` is the case's simulated clock, carried on every agent event for
+        the same reason the runner carries it: the ledger's own ``occurred_at``
+        is wall-clock and says nothing about when a case thought it was acting.
+        Nothing reads this key.
+        """
         if facts.audit is not None:
-            facts.audit.record(case.case_id, kind, Actor.AGENT, summary, payload or {})
+            facts.audit.record(
+                case.case_id,
+                kind,
+                Actor.AGENT,
+                summary,
+                {**(payload or {}), "at": facts.now.isoformat()},
+            )

@@ -167,6 +167,34 @@ def test_a_statutory_notice_stays_exempt_from_cooldown() -> None:
     assert notice_refusals == []
 
 
+# --- R1 must not move ------------------------------------------------------
+
+
+def test_r1_headline_metrics_are_unchanged() -> None:
+    """The published R1 figures, pinned.
+
+    `docs/RESULTS.md` reports treatment 0.7511, control 0.5158 and a lift of
+    +0.2353 at seed 20260824, and `reports/run_r1_recheck.txt` is the raw
+    output. Anything that moves these moves the headline claim, so it has to
+    be a deliberate decision with the documents updated, not a side effect.
+
+    Asserted on the *metrics*. Observability additions to the ledger payload
+    change serialised event bytes by construction; what must hold is that the
+    measured outcome does not.
+    """
+    batch = generate(name="population", size=900, seed=20260824)
+    outcomes, _provider, _ledger = run_batch(
+        batch,
+        DeterministicArms(treatment=DeclineConditionalPlanner(), control=PlatformDefaultPlanner()),
+    )
+
+    lift = recovery_lift(outcomes)
+
+    assert round(lift.treatment.rate, 4) == 0.7511
+    assert round(lift.control.rate, 4) == 0.5158
+    assert round(lift.value, 4) == 0.2353
+
+
 # --- idempotency: the named "one failure handled gracefully" deliverable ---
 
 

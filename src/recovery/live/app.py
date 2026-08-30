@@ -26,7 +26,9 @@ from recovery.live.console import render_console
 from recovery.live.demo import DEMO_SEED, DemoClient
 from recovery.live.downtime import DowntimeSource
 from recovery.live.hero import MEDIA_TYPES, find_hero_media, render_hero
+from recovery.live.race_page import render_race
 from recovery.live.redteam import UnknownAttack, catalogue, run_attack
+from recovery.live.replay import find_divergent_cases, replay_case
 from recovery.live.server import (
     Request,
     Response,
@@ -384,6 +386,23 @@ def build_router(room: ControlRoom) -> Router:
             range_header=request.header("Range"),
         )
 
+    def race(_request: Request, **_params: str) -> Response:
+        return html_response(render_race())
+
+    def race_data(request: Request, **_params: str) -> Response:
+        """One case under both planners.
+
+        Defaults to the ranked hero case rather than a pinned id, so a
+        different seed picks a different case instead of failing.
+        """
+        wanted = request.query.get("case") or find_divergent_cases().hero
+        if wanted is None:
+            return json_response({"error": "no divergent case in this batch"}, status=404)
+        try:
+            return json_response(replay_case(wanted).payload())
+        except KeyError as exc:
+            return json_response({"error": str(exc)}, status=404)
+
     def voice_open(request: Request, **_params: str) -> Response:
         amount = request.json().get("amount_paise")
         return json_response(room.open_call(amount_paise=int(amount) if amount else None))
@@ -416,6 +435,8 @@ def build_router(room: ControlRoom) -> Router:
     router.get("/api/case/<case_id>", case)
     router.get("/case/<case_id>/xray", xray)
     router.get("/api/downtime", downtime)
+    router.get("/race", race)
+    router.get("/api/race", race_data)
     router.get("/hero", hero)
     router.get("/hero/media", hero_media)
     router.get("/api/redteam", redteam_list)

@@ -9,6 +9,7 @@ difference is which ledger store the events land in.
 from __future__ import annotations
 
 import json
+import re
 import threading
 from typing import Any
 
@@ -214,6 +215,50 @@ def test_the_downtime_panel_is_readable_without_credentials() -> None:
     assert payload["available"] in (True, False)
     if payload["available"] is False:
         assert payload["reason"]
+
+
+def test_the_race_view_is_served() -> None:
+    response = _get(build_router(ControlRoom()), "/race")
+
+    assert response.status == 200  # type: ignore[attr-defined]
+    assert b"COUNTERFACTUAL RACE" in response.body  # type: ignore[attr-defined]
+
+
+def test_the_race_api_returns_both_arms() -> None:
+    payload = _payload(_get(build_router(ControlRoom()), "/api/race"))
+
+    assert payload["default"]["planner"] == "PlatformDefaultPlanner"
+    assert payload["recoup"]["planner"] == "DeclineConditionalPlanner"
+    assert payload["diverged"] > 0
+
+
+def test_an_unknown_race_case_is_404() -> None:
+    router = build_router(ControlRoom())
+
+    response = router.dispatch(
+        Request(method="GET", path="/api/race", query={"case": "case_999999"})
+    )
+
+    assert response.status == 404
+
+
+def test_no_figure_on_the_race_page_is_written_into_the_markup() -> None:
+    """The divergence rate must come from the API, not the template.
+
+    It exists to stop one winning case reading as cherry-picked, and baked into
+    the markup it would be worth nothing -- it would keep saying 21/120 after
+    the number stopped being true.
+
+    The stylesheet is stripped first: hex colours are full of digits and match
+    anything.
+    """
+    page = _get(build_router(ControlRoom()), "/race").body.decode()  # type: ignore[attr-defined]
+    markup = re.sub(r"<style>.*?</style>", "", page, flags=re.S)
+
+    for figure in ("21", "120", "17.5"):
+        assert not re.search(rf"\b{re.escape(figure)}\b", markup), (
+            f"{figure} is written into the page instead of read from /api/race"
+        )
 
 
 def test_the_cold_open_is_served() -> None:

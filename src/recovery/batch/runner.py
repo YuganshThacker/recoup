@@ -188,7 +188,7 @@ def run_case(
         EventKind.CASE_DETECTED,
         Actor.WEBHOOK,
         f"charge failed: {case.decline_reason} ({case.decline_class.value})",
-        {"amount_paise": int(case.amount), "arm": case.arm.value},
+        {"amount_paise": int(case.amount), "arm": case.arm.value, "at": state.now.isoformat()},
     )
 
     case.transition_to(CaseState.COOLING)
@@ -263,7 +263,7 @@ def _execute_step(
             EventKind.ACTION_EXECUTED,
             Actor.SYSTEM,
             f"debit {'succeeded' if result.succeeded else 'failed'}",
-            {"payment_id": result.payment_id, "reason": result.reason},
+            {"payment_id": result.payment_id, "reason": result.reason, "at": state.now.isoformat()},
         )
         case.transition_to(CaseState.AWAITING_OUTCOME)
         if result.succeeded:
@@ -312,7 +312,11 @@ def _perform(
             else EventKind.ACTION_EXECUTED,
             Actor.SYSTEM,
             f"sent {plan.action.template_id} via {plan.action.channel.value}",
-            {"message_id": receipt.message_id, "cost_paise": int(receipt.cost)},
+            {
+                "message_id": receipt.message_id,
+                "cost_paise": int(receipt.cost),
+                "at": state.now.isoformat(),
+            },
         )
 
     if kind is ActionKind.SEND_PREDEBIT_NOTICE:
@@ -361,7 +365,7 @@ def _finish(sim: SimCase, state: _RunState, source: str, ledger: Ledger) -> Case
         EventKind.OUTCOME_RECORDED,
         Actor.SYSTEM,
         f"recovered ({source})",
-        {"hours_to_recovery": round(hours, 2)},
+        {"hours_to_recovery": round(hours, 2), "at": state.now.isoformat()},
     )
     return _outcome(sim, state, recovered=True, source=source, stop_reason=None, hours=hours)
 
@@ -390,7 +394,7 @@ def _stop(sim: SimCase, state: _RunState, reason: StopReason, ledger: Ledger) ->
         EventKind.CASE_STOPPED,
         Actor.SYSTEM,
         f"stopped: {reason.value}",
-        {"attempts": case.attempt_count, "messages": state.messages},
+        {"attempts": case.attempt_count, "messages": state.messages, "at": state.now.isoformat()},
     )
 
     cure_at = sim.truth.self_cure_at
@@ -401,7 +405,7 @@ def _stop(sim: SimCase, state: _RunState, reason: StopReason, ledger: Ledger) ->
             EventKind.OUTCOME_RECORDED,
             Actor.SYSTEM,
             "recovered (organic) after the case stopped",
-            {"hours_to_recovery": round(hours, 2)},
+            {"hours_to_recovery": round(hours, 2), "at": state.now.isoformat()},
         )
         return _outcome(
             sim, state, recovered=True, source="organic", stop_reason=reason, hours=hours

@@ -43,12 +43,15 @@ class PolicyEngine:
     ) -> Decision:
         """Evaluate and append the full result to the case's audit trail."""
         decision = self.evaluate(action, ctx)
+        # `at` is the case's simulated clock, recorded for visualisation only --
+        # the ledger's own occurred_at is wall-clock, which says nothing about
+        # when a case thought it was acting. Nothing reads this key.
         ledger.record(
             case_id=ctx.case.case_id,
             kind=EventKind.POLICY_EVALUATED if decision.permitted else EventKind.ACTION_REFUSED,
             actor=Actor.RULES,
             summary=decision.explain(),
-            payload=decision.to_payload(),
+            payload={**decision.to_payload(), "at": ctx.now.isoformat()},
         )
         return decision
 
