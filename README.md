@@ -14,7 +14,7 @@ topped up on payday. Recoup tells them apart, decides what is worth doing, and
 
 | | question | result |
 |---|---|---|
-| **R1** | Does the system beat the platform default? | **+21.6 pts** · ₹96,908 incremental · 95% CI [+15.4, +27.7] |
+| **R1** | Does the system beat the platform default? | **+23.5 pts** · ₹1,08,422 incremental · 95% CI [+17.4, +29.6] |
 | **R2** | Does the model beat rules at retry *timing*? | **−21.2 pts** · 95% CI [−33.3, −9.2] · **the model loses** |
 | **R3** | Does the model beat keywords at *reading customers*? | **+12 pts** · McNemar p = 0.0019 · **the model wins** |
 
@@ -105,8 +105,8 @@ Checkable without running anything.
 | A model outage does not stop the system | [`planner.py`](src/recovery/agent/planner.py) | `test_model_outage_falls_back_without_raising` | 133 fallbacks, batch completed |
 | A double-fired debit charges once | [`provider.py`](src/recovery/sim/provider.py) | `test_double_fired_debit_does_not_debit_twice` | call count stays 1 |
 | A forged webhook is rejected | [`webhooks.py`](src/recovery/providers/webhooks.py) | `test_tampered_body_is_rejected` | Batch C: rejected |
-| Hard declines never consume an attempt | [`failure.py`](src/recovery/domain/failure.py) | `test_hard_declines_never_consume_a_debit_attempt` | 103 stopped, 0 debits |
-| The holdout is comparable | [`runner.py`](src/recovery/batch/runner.py) | `test_self_cure_rate_is_comparable_across_arms` | organic 46 vs 45 |
+| Hard declines never consume an attempt | [`failure.py`](src/recovery/domain/failure.py) | `test_hard_declines_never_consume_a_debit_attempt` | 104 stopped, 0 debits |
+| The holdout is comparable | [`runner.py`](src/recovery/batch/runner.py) | `test_self_cure_rate_is_comparable_across_arms` | organic 45 vs 45 |
 | The R3 baseline is not a strawman | [`inbound.py`](src/recovery/agent/inbound.py) | `test_baseline_is_competent_enough_to_be_a_fair_opponent` | 80% intent, 97% suppression |
 
 ## The harness rejects its own bad runs
@@ -129,8 +129,8 @@ existed**.
 ## Running it
 
 ```bash
-python -m pytest -q                          # 206 tests
-python -m mypy src/                          # strict, 43 files
+python -m pytest -q                          # 396 tests
+python -m mypy src/                          # strict, 57 files
 python -m recovery.batch                     # rules only, no dependencies
 
 pip install -e ".[openai]" && export OPENAI_API_KEY=...

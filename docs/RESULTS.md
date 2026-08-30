@@ -16,13 +16,15 @@ detecting when the system's own agent makes things worse.
 
 ## R1 — does the recovery system beat the platform default?
 
-**Batch A, n=900, seed 20260823.** Raw output: `reports/run_r1_population.txt`.
+**Batch A, n=900, seed 20260824.** Raw output: `reports/run_r1_recheck.txt`;
+the earlier `reports/run_r1_population.txt` is kept unedited and the difference
+between them is recorded under [corrections](#a-correction-to-r1) below.
 
 | | treatment | holdout | delta |
 |---|---|---|---|
-| **recovery rate** | 0.7314 | 0.5158 | **+0.2156** |
+| **recovery rate** | 0.7511 | 0.5158 | **+0.2353** |
 
-95% CI **[+0.1538, +0.2774]** · incremental **₹96,908.74** · cost per rupee **₹0.0028**
+95% CI **[+0.1741, +0.2964]** · incremental **₹1,08,421.90** · cost per rupee **₹0.0024**
 
 The control arm reproduces the platform default: a pre-debit notice, then a
 retry, repeated daily until three attempts are spent. It is decline-blind — it
@@ -33,41 +35,81 @@ briefly short of funds.
 
 | decline class | treatment | holdout | delta | n |
 |---|---|---|---|---|
-| soft | 0.797 | 0.481 | **+0.316** | 320/318 |
+| soft | 0.819 | 0.481 | **+0.338** | 320/318 |
 | unknown | 0.250 | 0.000 | +0.250 | 12/5 |
 | hard | 0.217 | 0.241 | −0.025 | 60/58 |
-| downtime | 0.970 | 1.000 | −0.030 | 66/61 |
+| downtime | 1.000 | 1.000 | +0.000 | 66/61 |
 
 Effectively all of it is on **soft declines**, which is the mechanism the design
 predicts: those are the cases where a retry can succeed and the only question is
-when. `insufficient_funds` recovered at 0.859 against 0.444 while using *fewer*
-attempts (1.66 vs 2.57) — better timing, less load on the issuer, more money.
+when. `insufficient_funds` recovered at 0.894 against 0.357 while using *fewer*
+attempts (1.64 vs 2.65) — better timing, less load on the issuer, more money.
 
 Two results that do not flatter the design, kept because they are true:
 
-* **Downtime shows no advantage** (−0.030). Waiting out an outage buys nothing
-  over the platform's fixed retry, because the mandatory 24-hour notice already
-  outlasts a typical outage. A piece of the design rationale that the data does
-  not support.
+* **Downtime shows no advantage** (+0.000, both arms at 1.000). Waiting out an
+  outage buys nothing over the platform's fixed retry, because the mandatory
+  24-hour notice already outlasts a typical outage. A piece of the design
+  rationale that the data does not support. The earlier run recorded −0.030
+  here; on the current code both arms recover every downtime case, which makes
+  the same point more plainly.
 * **Hard declines are flat** (−0.025). This is the correct outcome, not a
   failure: no debit can succeed on a dead instrument, so the ~22% that recover
   do so through instrument repair or self-cure in both arms. The system's
-  contribution is *withholding* 103 attempts that could not have worked.
+  contribution is *withholding* 104 attempts that could not have worked.
 
 ### The baseline that makes the number honest
 
-Organic recoveries — customers who paid unprompted — were **46 in treatment and
+Organic recoveries — customers who paid unprompted — were **45 in treatment and
 45 in control**. A balanced self-cure rate across arms is what makes the
 comparison sound. An earlier build failed this: the control arm exhausts its
 attempts sooner, stopped being watched sooner, and was therefore credited with
 fewer organic payments. That inflated the measured lift for a purely
 bookkeeping reason, and is now asserted by a test.
 
+### A correction to R1
+
+`reports/run_r1_population.txt` no longer reproduces. Re-running Batch A at the
+seed that file names produces a **different treatment arm**:
+
+| | committed output | current code |
+|---|---|---|
+| treatment | 0.7314 | **0.7511** |
+| control | 0.5158 | 0.5158 |
+| lift | +0.2156 | **+0.2353** |
+| soft (treatment) | 0.797 | 0.819 |
+| downtime (treatment) | 0.970 | 1.000 |
+
+The batch itself is unchanged — control, n, and every decline-class count are
+identical — so this is not a different sample. Something in the treatment path
+improved after that output was written and the report was never regenerated.
+The drift predates the live-surface work: the same figures come out of commit
+`f1ec8b0`.
+
+**The direction is unflattering to the record, not to the system.** The
+committed number understates what the code now does, so nothing published was
+overstated. But "every figure comes from a run whose raw output is committed"
+was not true of R1 until this re-check, and that claim is the reason to believe
+any of the others.
+
+The original file is kept unedited; `reports/run_r1_recheck.txt` carries the
+re-run and states its own provenance. The figures above and in the README are
+the reproducible ones.
+
+**Two seed labels were also wrong here**, both off by one against the raw
+output: Batch A was recorded as seed 20260823 and Batch B as 20260824, where
+the committed runs were invoked with `--seed 20260824`, making Batch A 20260824
+and Batch B 20260825 (the tail seed is `seed + 1`).
+
+**R2 and R3 have not been re-run.** R2 needs live model calls, so its numbers
+remain those of the run recorded in `reports/run_r2_ablation.txt` and should be
+read as measured on the code of that date rather than on this one.
+
 ---
 
 ## R2 — does the model beat the deterministic fallback?
 
-**Batch B, tail-enriched, n=700, seed 20260824, `gpt-4.1-mini`.**
+**Batch B, tail-enriched, n=700, seed 20260825, `gpt-4.1-mini`.**
 Raw output: `reports/run_r2_ablation.txt`.
 
 Cases reach the tail *because they are hard* — ambiguous diagnosis, high value,
@@ -298,7 +340,7 @@ by tests. The zero is left visible.
 
 ## The honest conclusion
 
-The system beats the platform default by **+21.6 points and ₹96,908 incremental**
+The system beats the platform default by **+23.5 points and ₹1,08,422 incremental**
 on a 900-case batch. Substantially all of that comes from decline-conditional
 retry timing, which is **rules**.
 

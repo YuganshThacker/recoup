@@ -1,0 +1,89 @@
+# R1 re-check, run 2026-08-31
+#
+# Why this file exists: reports/run_r1_population.txt no longer reproduces
+# from the code. Same batch -- control arm, n, and every decline-class count
+# are identical -- but the treatment arm recovers more than the committed
+# output records. The drift predates the live-surface work: this same result
+# comes out of commit f1ec8b0.
+#
+# Command: python -m recovery.batch --population 900 --tail 0 --seed 20260824 --agent off
+# The original file is kept unedited as the historical record.
+#
+=== BATCH A - population (seed 20260824) ===
+n = 900  (treatment 458, control 442)
+
+PRIMARY
+  recovery rate   treatment 0.7511  control 0.5158
+  lift            +0.2353  95% CI [+0.1741, +0.2964]  (0.7511 vs 0.5158)
+  incremental     Rs 1,08,421.90
+
+DESCRIPTIVE (no significance claims)
+  gross recovered (treated)  Rs 3,46,156.00
+  outreach cost (treated)    Rs 262.00
+  cost per rupee incremental 0.0024
+
+  recovery by decline class:
+    downtime  t=1.000 c=1.000 delta=+0.000  n=66/61
+    hard      t=0.217 c=0.241 delta=-0.025  n=60/58
+    soft      t=0.819 c=0.481 delta=+0.338  n=320/318
+    unknown   t=0.250 c=0.000 delta=+0.250  n=12/5
+
+  outcome source by arm:
+    treatment  {'attributed': 299, 'none': 114, 'organic': 45}
+    control    {'none': 214, 'attributed': 183, 'organic': 45}
+
+  stopping rules fired:
+    attempt_budget_exhausted         235
+    hard_decline_unrecoverable       104
+    max_escalation_reached           31
+    observation_window_closed        19
+
+  policy refusals by code:
+    hard_decline_no_retry            58
+    outside_contact_hours            38
+    unclassified_decline_no_retry    5
+
+  exception list:
+    hard_decline_withheld            104
+    unmapped_escalated               31
+    window_closed_undecided          19
+    budget_exhausted                 235
+
+  provider calls: 1552 charges, 2229 messages
+  message spend:  Rs 445.80
+
+=== BATCH B - tail-enriched, DETERMINISTIC BASELINE (no model in the loop) (seed 20260825) ===
+n = 0  (treatment 0, control 0)
+
+PRIMARY
+  recovery rate   treatment 0.0000  control 0.0000
+  lift            +0.0000  95% CI [+0.0000, +0.0000]  [straddles zero]  (0.0000 vs 0.0000)
+  incremental     Rs 0.00
+
+DESCRIPTIVE (no significance claims)
+  gross recovered (treated)  Rs 0.00
+  outreach cost (treated)    Rs 0.00
+  cost per rupee incremental n/a (no incremental recovery)
+
+  recovery by decline class:
+
+  outcome source by arm:
+    treatment  {}
+    control    {}
+
+  stopping rules fired:
+
+  policy refusals by code:
+
+  exception list:
+    hard_decline_withheld            0
+    unmapped_escalated               0
+    window_closed_undecided          0
+    budget_exhausted                 0
+
+  R2 ABLATION: not run. --agent off means no model was in the loop,
+  so Batch B above is a deterministic baseline, not an ablation.
+
+NOTE: these are simulation results. The world model encodes the hypothesis that
+retry timing matters, so it cannot be used to confirm that hypothesis -- only to
+show the policy exploits the structure it is given. See src/recovery/sim/world.py.

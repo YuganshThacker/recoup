@@ -1,6 +1,6 @@
 # Architecture
 
-6,200 lines of source, 1,800 of tests, 179 tests, mypy strict clean.
+11,870 lines of source, 4,380 of tests, 396 tests, mypy strict clean.
 
 This document explains what the system does, why each significant decision was
 made, and what was rejected on the way. Where a decision is contestable it says
@@ -218,7 +218,7 @@ cost slices.
 
 A large share of failed payments recover with no intervention. Counting every
 post-intervention payment as "recovered by the agent" would claim other people's
-work. Organic recoveries were **46 vs 45** across arms in the R1 run — a balanced
+work. Organic recoveries were **45 vs 45** across arms in the R1 run — a balanced
 baseline is what makes the comparison sound.
 
 **A bug this caught:** self-cure was originally credited only while a case was
@@ -295,6 +295,23 @@ experiment rests on. Shared state — audit ledger, provider ledgers, model
 telemetry, token budget — is individually locked. Measured: **15.87s → 2.56s with
 12 workers**, identical outcomes.
 
+**A gate that could not fire.** `gate_cooldown` returns early with "no prior
+contact on this case" when `last_contact_at` is None. The runner never set it,
+so it was None on every evaluation: across the committed audit report the gate
+ran **649 times and refused nothing**. Wired in, counted among the eight,
+rendered green — and structurally incapable of firing. One case in a 60-case
+run took 39 payment links because nothing was ever going to stop it.
+
+It surfaced from the compliance x-ray stamping that case NO EXCEPTIONS. Forty
+contacts to one customer with a clean bill of health is not a report anyone
+should trust, and chasing why produced the missing wiring. The same shape as
+the pool bug below, found the same way: a report disagreeing with what the
+system claimed about itself.
+
+R1 is unaffected — byte-identical with and without the fix, because the
+deterministic planner already spaces its contacts. On the agent path a 60-case
+run goes from 0 cooldown refusals to 34.
+
 **A bug worth recording:** the pool was added and never actually enabled — a
 string patch changed the signature but silently failed to replace the loop body.
 The determinism test passed *because both arms ran serially*. Identical results
@@ -311,8 +328,8 @@ latency, not CPU.
 Three design beliefs the measurements contradicted:
 
 1. **"Waiting out downtime beats retrying into it."** Measured advantage:
-   −0.030. The mandatory 24h notice already outlasts a typical outage, so the
-   sophistication buys nothing.
+   +0.000 — both arms recover every downtime case. The mandatory 24h notice
+   already outlasts a typical outage, so the sophistication buys nothing.
 2. **"The model will help on hard cases."** Measured: −0.2124, CI
    [−0.3326, −0.0922]. It over-waits — `wait +360h` on a case whose notice had
    already matured.
