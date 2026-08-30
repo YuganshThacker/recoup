@@ -12,7 +12,14 @@ Five checks, each answering a question the ledger genuinely settles:
  C3    Did any action execute over a gate that refused it?
  C4    Does every refusal carry a reason code?
  C5    Is the sequence unbroken?
+ C6    Was the customer contacted in proportion to what was done?
 ===== ===========================================================
+
+C6 is a **report-level** finding, and says so on the page. No gate enforces it
+today: a pre-debit notice is exempt from the cooldown by design -- withholding a
+statutory disclosure to satisfy an internal comfort rule is the worse failure --
+and nothing else caps how many may be sent. One case in a 60-case run announced
+**39 debits and executed none**, every notice individually permitted.
 
 **What it deliberately does not claim.** Ledger timestamps are wall-clock, and
 a simulated case spans milliseconds of real time, so this cannot re-derive the
@@ -30,6 +37,7 @@ from typing import Any
 
 from recovery.domain.events import AuditEvent, EventKind
 from recovery.domain.money import format_inr, paise
+from recovery.policy import constants as K
 from recovery.templates import REGISTERED
 
 GATE_NAMES: tuple[str, ...] = (
@@ -148,6 +156,7 @@ def build_xray(case_id: str, events: list[AuditEvent]) -> Xray:
         _c3(events),
         _c4(events),
         _c5(events),
+        _c6(contacts, money),
     )
 
     return Xray(
@@ -380,5 +389,44 @@ def _c5(events: list[AuditEvent]) -> Check:
             f"seq 1..{len(events)}, monotonic and complete"
             if actual == expected
             else f"expected 1..{len(events)}, found {actual}"
+        ),
+    )
+
+
+def _c6(contacts: tuple[Contact, ...], debits: tuple[MoneyAction, ...]) -> Check:
+    """Notices announce debits. Announcing far more than can ever happen is wrong.
+
+    The ceiling comes from the attempt budget rather than a number picked here:
+    a case may attempt at most ``INTERNAL_MAX_ATTEMPTS_PER_CASE`` debits, and RBI
+    requires a notice before each, so notices beyond that are announcing debits
+    the system has already forbidden itself from making.
+    """
+    notices = [c for c in contacts if c.template_id == "RP_PREDEBIT_01"]
+    ceiling = K.INTERNAL_MAX_ATTEMPTS_PER_CASE
+    # Both conditions, deliberately. A case that spent its whole attempt budget
+    # legitimately sends a notice per debit plus one whose debit was then refused
+    # for some other reason -- five notices against four debits is correct
+    # behaviour, and flagging it would train a reader to ignore this check.
+    excessive = len(notices) > ceiling and len(notices) > len(debits) + 1
+
+    return Check(
+        code="C6",
+        question="Was the customer contacted in proportion to what was done?",
+        passed=not excessive,
+        detail=(
+            f"{len(contacts)} contact(s), {len(notices)} of them pre-debit notices, "
+            f"against {len(debits)} debit(s) executed"
+        ),
+        evidence=(
+            (
+                f"{len(notices)} notices against {len(debits)} debit(s), over a "
+                f"{ceiling}-attempt budget: debits were announced that the system had "
+                "already forbidden itself from making",
+                "no gate refused any of them. A statutory notice is exempt from the "
+                "cooldown by design, and nothing else caps the count -- so this is a "
+                "report-level finding, not an enforced control",
+            )
+            if excessive
+            else ()
         ),
     )

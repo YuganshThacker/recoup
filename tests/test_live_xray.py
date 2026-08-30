@@ -412,6 +412,116 @@ def test_an_empty_case_produces_a_document_that_says_so() -> None:
     assert "absence of record" in page
 
 
+# --- C6: contact volume ----------------------------------------------------
+
+
+def _notices(count: int) -> list[AuditEvent]:
+    """A case that announces a debit over and over and never makes one."""
+    events = [
+        _event(
+            1,
+            EventKind.CASE_DETECTED,
+            "charge failed: insufficient_funds (soft)",
+            {"amount_paise": 49900, "arm": "treatment"},
+            Actor.WEBHOOK,
+        ),
+    ]
+    seq = 2
+    for _ in range(count):
+        events.append(
+            _event(
+                seq,
+                EventKind.POLICY_EVALUATED,
+                "permitted: send_predebit_notice via sms [RP_PREDEBIT_01]",
+                {
+                    "action": "send_predebit_notice via sms [RP_PREDEBIT_01]",
+                    "proposed_by": "agent",
+                    "permitted": True,
+                    "gates": _gates(),
+                },
+            )
+        )
+        events.append(
+            _event(
+                seq + 1,
+                EventKind.NOTICE_SENT,
+                "sent RP_PREDEBIT_01 via sms",
+                {"message_id": f"m{seq}", "cost_paise": 20},
+                Actor.SYSTEM,
+            )
+        )
+        seq += 2
+    return events
+
+
+def test_a_handful_of_notices_is_not_an_exception() -> None:
+    xray = build_xray("case_x", _notices(3))
+
+    assert all(c.passed for c in xray.checks if c.code == "C6")
+
+
+def test_more_notices_than_the_attempt_budget_permits_is_an_exception() -> None:
+    # A pre-debit notice announces a debit. The attempt budget caps debits at
+    # four, so a case that announced thirty-nine was announcing debits that
+    # could never happen -- and nothing stopped it, because the statutory
+    # exemption from cooldown is deliberate.
+    xray = build_xray("case_x", _notices(39))
+
+    assert any(c.code == "C6" and not c.passed for c in xray.checks)
+    assert xray.verdict == "exceptions"
+
+
+def test_a_notice_for_every_attempt_plus_one_is_not_an_exception() -> None:
+    # A case that spends its whole attempt budget legitimately sends a notice
+    # per debit, plus one whose debit was then refused for another reason.
+    # Flagging that would train a reader to ignore this check.
+    events = _notices(5)
+    seq = events[-1].seq
+    for i in range(4):
+        events.append(
+            _event(
+                seq + 1 + i * 2,
+                EventKind.POLICY_EVALUATED,
+                "permitted: retry_debit",
+                {
+                    "action": "retry_debit",
+                    "proposed_by": "rules",
+                    "permitted": True,
+                    "gates": _gates(),
+                },
+            )
+        )
+        events.append(
+            _event(
+                seq + 2 + i * 2,
+                EventKind.ACTION_EXECUTED,
+                "debit failed",
+                {"payment_id": f"p{i}"},
+                Actor.SYSTEM,
+            )
+        )
+
+    xray = build_xray("case_x", events)
+
+    assert all(c.passed for c in xray.checks if c.code == "C6"), next(
+        c.detail for c in xray.checks if c.code == "C6"
+    )
+
+
+def test_the_volume_check_says_what_it_counted() -> None:
+    detail = next(c for c in build_xray("case_x", _notices(39)).checks if c.code == "C6").detail
+
+    assert "39" in detail
+
+
+def test_the_volume_check_is_reported_as_a_report_level_finding() -> None:
+    # No gate prevents this today. The x-ray must not imply otherwise.
+    xray = build_xray("case_x", _notices(39))
+    check = next(c for c in xray.checks if c.code == "C6")
+
+    assert "no gate" in " ".join(check.evidence).lower()
+
+
 # --- what it refuses to claim ----------------------------------------------
 
 
