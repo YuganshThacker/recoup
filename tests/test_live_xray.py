@@ -175,14 +175,31 @@ def _message_case() -> list[AuditEvent]:
     exception on a compliant case.
     """
     return [
-        _event(1, EventKind.CASE_DETECTED, "charge failed: debit_instrument_inactive (hard)",
-               {"amount_paise": 49900, "arm": "treatment"}, Actor.WEBHOOK),
-        _event(2, EventKind.POLICY_EVALUATED,
-               "permitted: request_instrument_update via sms [RP_INSTRUMENT_01]",
-               {"action": "request_instrument_update via sms [RP_INSTRUMENT_01]",
-                "proposed_by": "agent", "permitted": True, "gates": _gates()}),
-        _event(3, EventKind.ACTION_EXECUTED, "sent RP_INSTRUMENT_01 via sms",
-               {"message_id": "msg_2", "cost_paise": 20}, Actor.SYSTEM),
+        _event(
+            1,
+            EventKind.CASE_DETECTED,
+            "charge failed: debit_instrument_inactive (hard)",
+            {"amount_paise": 49900, "arm": "treatment"},
+            Actor.WEBHOOK,
+        ),
+        _event(
+            2,
+            EventKind.POLICY_EVALUATED,
+            "permitted: request_instrument_update via sms [RP_INSTRUMENT_01]",
+            {
+                "action": "request_instrument_update via sms [RP_INSTRUMENT_01]",
+                "proposed_by": "agent",
+                "permitted": True,
+                "gates": _gates(),
+            },
+        ),
+        _event(
+            3,
+            EventKind.ACTION_EXECUTED,
+            "sent RP_INSTRUMENT_01 via sms",
+            {"message_id": "msg_2", "cost_paise": 20},
+            Actor.SYSTEM,
+        ),
     ]
 
 
@@ -209,8 +226,13 @@ def test_a_message_is_not_counted_as_an_execution_against_the_instrument() -> No
 def test_sending_a_different_template_than_the_one_permitted_is_an_exception() -> None:
     # Stronger than the check it replaces: permitted A, sent B.
     events = _message_case()
-    events[2] = _event(3, EventKind.ACTION_EXECUTED, "sent RP_DUNNING_01 via sms",
-                       {"message_id": "msg_2", "cost_paise": 20}, Actor.SYSTEM)
+    events[2] = _event(
+        3,
+        EventKind.ACTION_EXECUTED,
+        "sent RP_DUNNING_01 via sms",
+        {"message_id": "msg_2", "cost_paise": 20},
+        Actor.SYSTEM,
+    )
 
     xray = build_xray("case_x", events)
 
@@ -219,8 +241,9 @@ def test_sending_a_different_template_than_the_one_permitted_is_an_exception() -
 
 def test_a_debit_is_not_covered_by_a_message_permit() -> None:
     events = _message_case()
-    events[2] = _event(3, EventKind.ACTION_EXECUTED, "debit succeeded",
-                       {"payment_id": "pay_9"}, Actor.SYSTEM)
+    events[2] = _event(
+        3, EventKind.ACTION_EXECUTED, "debit succeeded", {"payment_id": "pay_9"}, Actor.SYSTEM
+    )
 
     xray = build_xray("case_x", events)
 

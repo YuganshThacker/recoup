@@ -7,7 +7,7 @@ the report -- which is precisely why they are asserted rather than assumed.
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from recovery.agent.router import DeterministicArms
 from recovery.batch.metrics import (
@@ -20,17 +20,55 @@ from recovery.batch.metrics import (
     refusal_counts,
     stop_reason_counts,
 )
-from recovery.batch.runner import run_batch
+from recovery.batch.runner import _context, _perform, _RunState, run_batch
 from recovery.domain.case import ExperimentArm
+from recovery.domain.events import InMemoryLedger, Ledger
 from recovery.domain.failure import DeclineClass
 from recovery.domain.money import paise
-from recovery.planner.rules import DeclineConditionalPlanner, PlatformDefaultPlanner
-from recovery.policy.actions import Channel
+from recovery.planner.rules import DeclineConditionalPlanner, PlannedStep, PlatformDefaultPlanner
+from recovery.policy.actions import ActionKind, Channel, ProposedAction
+from recovery.policy.engine import PolicyEngine
 from recovery.sim.generator import generate
 from recovery.sim.provider import SimulatedProvider
 from recovery.sim.world import GroundTruth
+from recovery.templates import bind_variables
 
 NOW = datetime(2026, 9, 10, 6, 0, tzinfo=UTC)
+
+
+def _sim_case():  # type: ignore[no-untyped-def]
+    """One generated case, for the unit tests below."""
+    return generate(name="t", size=1, seed=3).cases[0]
+
+
+def _provider_for(sim):  # type: ignore[no-untyped-def]
+    return SimulatedProvider(truths={sim.case.case_id: sim.truth})
+
+
+def _reminder_at(at: datetime) -> PlannedStep:
+    return PlannedStep(
+        action=ProposedAction(
+            kind=ActionKind.SEND_REMINDER,
+            channel=Channel.SMS,
+            template_id="RP_DUNNING_01",
+            variables=bind_variables("RP_DUNNING_01"),
+        ),
+        at=at,
+        rationale="test",
+    )
+
+
+def _notice_at(at: datetime) -> PlannedStep:
+    return PlannedStep(
+        action=ProposedAction(
+            kind=ActionKind.SEND_PREDEBIT_NOTICE,
+            channel=Channel.SMS,
+            template_id="RP_PREDEBIT_01",
+            variables=bind_variables("RP_PREDEBIT_01"),
+        ),
+        at=at,
+        rationale="test",
+    )
 
 
 def _run(size: int = 600, seed: int = 7, enriched: bool = False):
@@ -40,6 +78,93 @@ def _run(size: int = 600, seed: int = 7, enriched: bool = False):
         DeterministicArms(treatment=DeclineConditionalPlanner(), control=PlatformDefaultPlanner()),
     )
     return batch, outcomes, provider, ledger
+
+
+# --- the cooldown gate has to be able to fire ------------------------------
+
+
+def test_the_runner_records_when_it_last_contacted_the_customer() -> None:
+    """The wiring that makes the cooldown gate able to fire at all.
+
+    ``gate_cooldown`` returns early with "no prior contact on this case" when
+    ``last_contact_at`` is None. The runner never set it, so across the whole
+    committed audit report the gate was evaluated 649 times and refused nothing
+    -- wired in, counted among the eight, rendered green, and structurally
+    incapable of firing. One case in a 60-case run took 39 payment links.
+    """
+    sim = _sim_case()
+    state = _RunState(now=NOW, closes_at=NOW + timedelta(days=21))
+    assert state.last_contact_at is None
+
+    _perform(sim, state, _reminder_at(NOW), _provider_for(sim), Ledger(InMemoryLedger()))
+
+    assert state.last_contact_at == NOW
+
+
+def test_a_notice_also_counts_as_the_prior_contact() -> None:
+    # Sending a notice is exempt from the cooldown. It is still a message to a
+    # person, and the *next* message has to clear a gap from it.
+    sim = _sim_case()
+    state = _RunState(now=NOW, closes_at=NOW + timedelta(days=21))
+
+    _perform(sim, state, _notice_at(NOW), _provider_for(sim), Ledger(InMemoryLedger()))
+
+    assert state.last_contact_at == NOW
+
+
+def test_the_cooldown_gate_is_handed_the_time_it_needs() -> None:
+    # The line that was missing from _context.
+    sim = _sim_case()
+    state = _RunState(now=NOW, closes_at=NOW + timedelta(days=21), last_contact_at=NOW)
+
+    assert _context(sim, state).last_contact_at == NOW
+
+
+def test_the_gate_refuses_a_second_contact_inside_the_window() -> None:
+    """End to end through the real gate, which is the claim that matters."""
+    sim = _sim_case()
+    state = _RunState(now=NOW, closes_at=NOW + timedelta(days=21), last_contact_at=NOW)
+    engine = PolicyEngine()
+
+    decision = engine.evaluate(_reminder_at(NOW).action, _context(sim, state))
+
+    refusals = [r for r in decision.results if not r.passed]
+    assert any(r.gate.value == "cooldown" for r in refusals)
+
+
+def test_the_gate_allows_it_once_the_window_has_passed() -> None:
+    sim = _sim_case()
+    state = _RunState(
+        now=NOW + timedelta(hours=49),
+        closes_at=NOW + timedelta(days=21),
+        last_contact_at=NOW,
+    )
+
+    decision = PolicyEngine().evaluate(_reminder_at(state.now).action, _context(sim, state))
+
+    assert all(r.passed or r.gate.value != "cooldown" for r in decision.results)
+
+
+def test_a_statutory_notice_stays_exempt_from_cooldown() -> None:
+    """The exemption is deliberate and argued at the gate.
+
+    Withholding a legally required pre-debit notice to satisfy an internal
+    comfort rule means a late notice or a missed debit, and the customer loses
+    their opt-out window either way. Wiring the cooldown up must not quietly
+    take that exemption away.
+    """
+    _batch, _outcomes, _provider, ledger = _run(size=400, seed=11, enriched=True)
+
+    notice_refusals = [
+        event.summary
+        for case_id in ledger._store.all_cases()  # type: ignore[attr-defined]
+        for event in ledger.history(case_id)
+        if "send_predebit_notice" in str(event.payload.get("action", ""))
+        for gate in event.payload.get("gates", [])
+        if gate["gate"] == "cooldown" and not gate["passed"]
+    ]
+
+    assert notice_refusals == []
 
 
 # --- idempotency: the named "one failure handled gracefully" deliverable ---

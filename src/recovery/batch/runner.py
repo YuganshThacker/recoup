@@ -107,6 +107,14 @@ class _RunState:
     now: datetime
     closes_at: datetime
     notice_sent_at: datetime | None = None
+    last_contact_at: datetime | None = None
+    """When this case last put something in front of the customer.
+
+    ``gate_cooldown`` returns early with "no prior contact on this case" when
+    this is None, so omitting it did not weaken the gate -- it disabled it.
+    Across the committed audit report the gate was evaluated 649 times and
+    refused nothing, and one case in a 60-case run took 39 payment links."""
+
     repair_requested: bool = False
     repaired: bool = False
     messages: int = 0
@@ -145,6 +153,7 @@ def _context(sim: SimCase, state: _RunState) -> PolicyContext:
         consented_purposes=frozenset({"payment_recovery"}),
         templates=REGISTERED,
         predebit_notice_sent_at=state.notice_sent_at,
+        last_contact_at=state.last_contact_at,
         downtime_active=_downtime_active(sim, state.now),
         downtime_expected_end=sim.truth.downtime_ends_at,
         mandate_active=True,
@@ -292,6 +301,10 @@ def _perform(
         )
         state.messages += 1
         state.cost += int(receipt.cost)
+        # Set for every customer contact, notices included. Sending a notice is
+        # exempt from the cooldown; it still counts as the prior contact the
+        # *next* message has to clear.
+        state.last_contact_at = state.now
         ledger.record(
             case.case_id,
             EventKind.NOTICE_SENT
