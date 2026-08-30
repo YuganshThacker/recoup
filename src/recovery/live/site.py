@@ -52,15 +52,17 @@ class SiteManifest:
 def pick_cases(histories: dict[str, list[AuditEvent]], *, limit: int) -> list[str]:
     """The cases worth attesting to.
 
-    Sorted by how much the policy engine had to say. An attestation on a case
-    where nothing happened proves nothing -- the checks need something to
-    check, so cases with refusals come first.
+    Cases the report found something wrong with come first, then cases the
+    policy engine had most to say about. A site that surfaced its findings only
+    by luck of the sort order would be burying the one thing it exists to show;
+    an attestation on a case where nothing happened proves nothing either way.
     """
 
-    def interest(case_id: str) -> tuple[int, int]:
+    def interest(case_id: str) -> tuple[int, int, int]:
         events = histories[case_id]
+        report = build_xray(case_id, events)
         refusals = sum(1 for e in events if e.kind is EventKind.ACTION_REFUSED)
-        return refusals, len(events)
+        return len(report.exceptions), refusals, len(events)
 
     return sorted(histories, key=interest, reverse=True)[:limit]
 

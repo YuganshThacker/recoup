@@ -84,5 +84,14 @@ def test_selection_is_bounded(tmp_path: Path) -> None:
     assert len(manifest.xrays) <= 3
 
 
+def test_a_case_the_report_faulted_is_surfaced_first(tmp_path: Path) -> None:
+    # The findings are the point. Surfacing them only by luck of the sort order
+    # would bury the one thing the site exists to show.
+    manifest = build_site(tmp_path, cases=60, max_xrays=4)
+
+    if any(e.verdict == "exceptions" for e in manifest.xrays):
+        assert manifest.xrays[0].verdict == "exceptions"
+
+
 def test_pick_cases_handles_an_empty_run() -> None:
     assert pick_cases({}, limit=5) == []
