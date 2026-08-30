@@ -1,0 +1,30 @@
+<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Recoup &mdash; evidence</title><style>
+:root{--ink:#15181c;--soft:#5c6570;--rule:#d8dde3;--paper:#fbfcfd;
+      --ok:#0f7a45;--bad:#b8321a;--accent:#0b4a8f;
+      --serif:ui-serif,Georgia,"Times New Roman",serif;
+      --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font:15px/1.65 var(--serif);padding:52px 24px 80px}
+.sheet{max-width:820px;margin:0 auto}
+header{border-bottom:2px solid var(--ink);padding-bottom:18px;margin-bottom:30px}
+h1{font-size:25px;font-weight:600;letter-spacing:-.01em}
+.sub{font:11px/1.6 var(--mono);color:var(--soft);letter-spacing:.06em;margin-top:7px;text-transform:uppercase}
+.lede{margin:22px 0 0;color:var(--soft);max-width:62ch}
+h2{font:11px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--soft);
+   margin:36px 0 14px;padding-bottom:7px;border-bottom:1px solid var(--rule)}
+.card{display:block;border:1px solid var(--rule);padding:15px 17px;margin-bottom:9px;
+      text-decoration:none;color:inherit;transition:border-color .14s}
+.card:hover,.card:focus-visible{border-color:var(--accent);outline:none}
+.card .t{font-size:16px;display:flex;align-items:baseline;gap:11px;flex-wrap:wrap}
+.card .t .id{font-family:var(--mono);font-size:13px}
+.card .t .mark{margin-left:auto;font:9.5px/1 var(--mono);letter-spacing:.13em;
+               padding:4px 7px;border:1px solid}
+.mark.clean{color:var(--ok);border-color:var(--ok)}
+.mark.exceptions{color:var(--bad);border-color:var(--bad)}
+.card .d{font:11.5px/1.7 var(--mono);color:var(--soft);margin-top:7px}
+.note{border-left:3px solid var(--accent);background:#f2f6fb;padding:13px 16px;margin:14px 0;
+      font-size:13.5px;color:#24425f}
+footer{margin-top:42px;padding-top:15px;border-top:1px solid var(--rule);
+       font:10.5px/1.8 var(--mono);color:var(--soft)}
+a{color:var(--accent)}
+</style></head><body><div class='sheet'><header><h1>Recoup &mdash; evidence</h1><div class='sub'>bounded revenue recovery &middot; razorpay ai buildathon &middot; track 03</div></header><p class='lede'>Recoup detects a failed recurring charge, decides what is worth doing, and <b>cannot take a money action its policy engine has not permitted.</b> These are the records it produces. Nothing here is a control surface: there is nothing to trigger and no state to change.</p><h2>The audit report</h2><a class='card' href='audit.html'><div class='t'>Full run, every case</div><div class='d'>Case timelines, model proposals, refusal traces and the measured results, in one self-contained file.</div></a><h2>Compliance attestations</h2><p class='note'>One per case, built from the append-only ledger. Five checks, each answering a question the ledger settles &mdash; and each able to come back negative. A report that can only say &ldquo;pass&rdquo; attests to nothing.</p><a class='card' href='xray/case_000033.html'><div class='t'><span class='id'>case_000033</span><span class='mark exceptions'>EXCEPTIONS</span></div><div class='d'>Rs 199.00 &middot; 81 ledger events &middot; 39 contacts &middot; 1 refusals</div></a><a class='card' href='xray/case_000021.html'><div class='t'><span class='id'>case_000021</span><span class='mark exceptions'>EXCEPTIONS</span></div><div class='d'>Rs 999.00 &middot; 82 ledger events &middot; 40 contacts &middot; 0 refusals</div></a><a class='card' href='xray/case_000057.html'><div class='t'><span class='id'>case_000057</span><span class='mark clean'>NO EXCEPTIONS</span></div><div class='d'>Rs 499.00 &middot; 163 ledger events &middot; 5 contacts &middot; 36 refusals</div></a><a class='card' href='xray/case_000048.html'><div class='t'><span class='id'>case_000048</span><span class='mark clean'>NO EXCEPTIONS</span></div><div class='d'>Rs 24,999.00 &middot; 158 ledger events &middot; 6 contacts &middot; 35 refusals</div></a><a class='card' href='xray/case_000005.html'><div class='t'><span class='id'>case_000005</span><span class='mark clean'>NO EXCEPTIONS</span></div><div class='d'>Rs 499.00 &middot; 30 ledger events &middot; 1 contacts &middot; 6 refusals</div></a><a class='card' href='xray/case_000053.html'><div class='t'><span class='id'>case_000053</span><span class='mark clean'>NO EXCEPTIONS</span></div><div class='d'>Rs 199.00 &middot; 30 ledger events &middot; 1 contacts &middot; 6 refusals</div></a><a class='card' href='xray/case_000006.html'><div class='t'><span class='id'>case_000006</span><span class='mark clean'>NO EXCEPTIONS</span></div><div class='d'>Rs 999.00 &middot; 22 ledger events &middot; 1 contacts &middot; 4 refusals</div></a><a class='card' href='xray/case_000040.html'><div class='t'><span class='id'>case_000040</span><span class='mark clean'>NO EXCEPTIONS</span></div><div class='d'>Rs 99.00 &middot; 22 ledger events &middot; 1 contacts &middot; 4 refusals</div></a><h2>Source</h2><a class='card' href='https://github.com/YuganshThacker/recoup'><div class='t'>The repository</div><div class='d'>Architecture, the pre-registered analysis plan, and the results including the ones that go against the model.</div></a><footer>Generated 30 August 2026 from a run of the committed code. The live console is not deployed: it drives real policy code and binds loopback by design.</footer></div></body></html>
