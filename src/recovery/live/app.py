@@ -29,6 +29,8 @@ from recovery.live.hero import MEDIA_TYPES, find_hero_media, render_hero
 from recovery.live.race_page import render_race
 from recovery.live.redteam import UnknownAttack, catalogue, run_attack
 from recovery.live.replay import find_divergent_cases, replay_case
+from recovery.live.results import read_results
+from recovery.live.results_page import render_results
 from recovery.live.server import (
     Request,
     Response,
@@ -386,6 +388,12 @@ def build_router(room: ControlRoom) -> Router:
             range_header=request.header("Range"),
         )
 
+    def results(_request: Request, **_params: str) -> Response:
+        return html_response(render_results(read_results()))
+
+    def results_data(_request: Request, **_params: str) -> Response:
+        return json_response(read_results().payload())
+
     def race(_request: Request, **_params: str) -> Response:
         return html_response(render_race())
 
@@ -435,6 +443,8 @@ def build_router(room: ControlRoom) -> Router:
     router.get("/api/case/<case_id>", case)
     router.get("/case/<case_id>/xray", xray)
     router.get("/api/downtime", downtime)
+    router.get("/results", results)
+    router.get("/api/results", results_data)
     router.get("/race", race)
     router.get("/api/race", race_data)
     router.get("/hero", hero)

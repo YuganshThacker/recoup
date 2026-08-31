@@ -217,6 +217,21 @@ def test_the_downtime_panel_is_readable_without_credentials() -> None:
         assert payload["reason"]
 
 
+def test_the_results_view_is_served() -> None:
+    response = _get(build_router(ControlRoom()), "/results")
+
+    assert response.status == 200  # type: ignore[attr-defined]
+    assert b"MEASURED RESULTS" in response.body  # type: ignore[attr-defined]
+
+
+def test_the_results_api_returns_all_three() -> None:
+    payload = _payload(_get(build_router(ControlRoom()), "/api/results"))
+
+    for key in ("r1", "r2", "r3"):
+        assert payload[key]["available"] is True, payload[key]["reason"]  # type: ignore[index]
+        assert payload[key]["source"].endswith(".txt")  # type: ignore[index]
+
+
 def test_the_race_view_is_served() -> None:
     response = _get(build_router(ControlRoom()), "/race")
 
