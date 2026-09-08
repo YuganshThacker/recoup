@@ -42,6 +42,7 @@ class Actor(StrEnum):
 
 
 class EventKind(StrEnum):
+    DELIVERY_RECEIVED = "delivery_received"
     CASE_DETECTED = "case_detected"
     ARM_ASSIGNED = "arm_assigned"
     STATE_CHANGED = "state_changed"

@@ -13,6 +13,7 @@ import re
 import threading
 from typing import Any
 
+from recovery.domain.events import EventKind
 from recovery.live.app import ControlRoom, build_router
 from recovery.live.server import CONSOLE_HEADER, Request
 
@@ -111,6 +112,25 @@ def test_a_run_reaches_a_live_subscriber() -> None:
         received.extend(batch)
     assert received, "the console saw nothing of a completed run"
     assert {e.case_id for e in received}, "events must carry case ids"
+
+
+def test_every_case_enters_through_webhook_verification() -> None:
+    """Detect is stage one of the loop, so it has to actually run.
+
+    The first version of this had a _detect method that was never called: the
+    console reported zero deliveries while cases appeared anyway. A case that
+    opens without a verified delivery is a case that appeared by fiat.
+    """
+    room = ControlRoom(cases=6)
+    room.start_run()
+    room.wait(timeout=120)
+
+    assert room.state()["detection"]["opened"] == 6  # type: ignore[index]
+    for case_id in room.store.all_cases():
+        first = room.store.read_case(case_id)[0]
+        assert first.kind is EventKind.DELIVERY_RECEIVED, (
+            f"{case_id} opened without a verified delivery"
+        )
 
 
 def test_the_run_writes_through_to_the_ledger_store() -> None:

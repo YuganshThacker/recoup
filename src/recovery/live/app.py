@@ -19,6 +19,7 @@ from typing import Any
 from recovery.agent.planner import AgentPlanner
 from recovery.agent.router import AgentTailArms
 from recovery.batch.runner import CaseOutcome, run_batch
+from recovery.detect import Detector, delivery_for, sign_delivery
 from recovery.domain.events import Actor, Ledger
 from recovery.domain.money import format_inr
 from recovery.live.broadcast import BroadcastLedger
@@ -52,7 +53,8 @@ from recovery.live.xray_page import render_xray
 from recovery.planner.rules import DeclineConditionalPlanner, PlatformDefaultPlanner
 from recovery.policy.actions import ActionKind, Channel, ProposedAction
 from recovery.policy.engine import PolicyEngine
-from recovery.sim.generator import generate
+from recovery.providers.webhooks import WebhookReceiver
+from recovery.sim.generator import Batch, generate
 from recovery.templates import bind_variables
 
 DEFAULT_DEMO_CASES = 24
@@ -62,6 +64,14 @@ batches are 900 and 1,600; this is a stage, not an experiment."""
 ASSET_DIR = Path(__file__).resolve().parents[3] / "assets"
 """Where a cold-open clip goes. Outside the package: it is a demo asset, not
 code, and it should not end up in a wheel."""
+
+DEMO_WEBHOOK_SECRET = "recoup_console_webhook_secret"
+"""Used to sign the console's own deliveries when no real one is configured.
+
+The deliveries are synthesised -- Razorpay has no public URL to call here --
+and signing them properly means they go through the same HMAC verification and
+replay dedupe a real delivery would, rather than around it. What is
+synthesised is the delivery; what is not is the verification."""
 
 STREAM_REPLAY = 200
 """Events a joining viewer is given, so refreshing mid-run is not a blank
@@ -122,6 +132,7 @@ class ControlRoom:
         self._outcomes: list[CaseOutcome] = []
         self._error: str | None = None
         self.downtime = DowntimeSource.from_env()
+        self.detector: Detector | None = None
         self.assets = ASSET_DIR
         self._call: VoiceSession | None = None
         self._ended_call: VoiceSession | None = None
@@ -165,6 +176,11 @@ class ControlRoom:
                 agent=AgentPlanner(client=DemoClient(), fallback=rules),
                 seed=self.seed,
             )
+            # Detect first. Every case enters through the same verifier a real
+            # Razorpay delivery would, so the audit trail starts at the front
+            # door rather than with a case that appeared by fiat.
+            self._detect(batch)
+
             outcomes, _provider, _ledger = run_batch(batch, router, workers=1, ledger=self.ledger)
         except Exception as exc:  # surfaced to the console as a failed run, not swallowed
             with self._lock:
@@ -176,6 +192,20 @@ class ControlRoom:
                 self._outcomes = outcomes
         finally:
             self._finished.set()
+
+    def _detect(self, batch: Batch) -> None:
+        """Open every case in the batch through webhook verification."""
+        secret = os.environ.get("RAZORPAY_WEBHOOK_SECRET") or DEMO_WEBHOOK_SECRET
+        detector = Detector(receiver=WebhookReceiver(secret=secret), ledger=self.ledger)
+        for index, sim in enumerate(batch.cases):
+            body = delivery_for(
+                case_id=sim.case.case_id,
+                amount_paise=int(sim.case.amount),
+                decline_reason=str(sim.case.decline_reason),
+                method=sim.case.method.value,
+            )
+            detector.deliver(body, sign_delivery(body, secret), delivery_id=f"evt_{index:06d}")
+        self.detector = detector
 
     def wait(self, *, timeout: float) -> bool:
         """Block until the current run settles. For tests and the CLI."""
@@ -200,6 +230,11 @@ class ControlRoom:
                 "agent": "demo-stand-in",
                 "error": self._error,
                 "viewers": self.store.subscriber_count,
+                "detection": {
+                    "opened": self.detector.opened if self.detector else 0,
+                    "duplicates": self.detector.duplicates if self.detector else 0,
+                    "ignored": self.detector.ignored if self.detector else 0,
+                },
             }
 
     # --- the call ----------------------------------------------------------

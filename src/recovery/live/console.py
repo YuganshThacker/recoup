@@ -365,7 +365,7 @@ button.rt:hover:not(:disabled){border-color:var(--refuse);color:#ffd0c4;backgrou
 </div>
 
 <script>
-const LANES=[["01","UNDERSTAND",["case_detected","diagnosis_produced"]],
+const LANES=[["01","DETECT",["delivery_received","case_detected","diagnosis_produced"]],
              ["02","DECIDE",["actions_proposed","arm_assigned","state_changed"]],
              ["03","GOVERN",["policy_evaluated","action_refused"]],
              ["04","ACT",["action_executed","notice_sent","action_scheduled","action_deduped","provider_callback"]],
