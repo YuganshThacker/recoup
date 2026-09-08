@@ -23,6 +23,8 @@ from pathlib import Path
 
 from recovery.domain.events import AuditEvent, EventKind
 from recovery.live.app import ControlRoom
+from recovery.live.casestudy import build_case_study
+from recovery.live.casestudy_page import render_case_study
 from recovery.live.xray import Xray, build_xray
 from recovery.live.xray_page import render_xray
 
@@ -47,6 +49,10 @@ class SiteManifest:
     xrays: tuple[XrayEntry, ...]
     audit: str | None
     built_at: str
+    case_study: str | None = None
+    """The worked example. Server-rendered from a real run and fully static, so
+    it drops onto the site unchanged -- which matters, because it is the page
+    most directly aligned with how the work is evaluated."""
 
 
 def pick_cases(histories: dict[str, list[AuditEvent]], *, limit: int) -> list[str]:
@@ -92,11 +98,13 @@ def build_site(
         entries.append(_entry(case_id, name, report))
 
     audit = _copy_audit(out, audit_report)
+    case_study = _write_case_study(out)
 
     manifest = SiteManifest(
         xrays=tuple(entries),
         audit=audit,
         built_at=datetime.now(UTC).strftime("%d %B %Y"),
+        case_study=case_study,
     )
     (out / "index.html").write_text(_index(manifest), encoding="utf-8")
 
@@ -116,6 +124,19 @@ def _entry(case_id: str, name: str, report: Xray) -> XrayEntry:
         contacts=len(report.contacts),
         events=report.events,
     )
+
+
+def _write_case_study(out: Path) -> str | None:
+    """Render the worked example, or nothing if the batch produced none.
+
+    Absence is a real state: the study is only built from a case that recovered
+    *attributably*, and a run where none did has no worked example to show.
+    """
+    study = build_case_study()
+    if study is None:
+        return None
+    (out / "case-study.html").write_text(render_case_study(study), encoding="utf-8")
+    return "case-study.html"
 
 
 def _copy_audit(out: Path, source: Path | None) -> str | None:
@@ -178,6 +199,16 @@ def _index(manifest: SiteManifest) -> str:
         "nothing to trigger and no state to change.</p>",
     ]
 
+    if manifest.case_study:
+        parts += [
+            "<h2>One case, all the way through</h2>",
+            f"<a class='card' href='{manifest.case_study}'>",
+            "<div class='t'>Detect &rarr; Diagnose &rarr; Intervene &rarr; Recover &rarr; Measure</div>",
+            "<div class='d'>One case walked from the verified provider delivery that opened it "
+            "to the money that came back, with every gate evaluation on the way. The loop closes "
+            "on a payment, not a chart.</div></a>",
+        ]
+
     if manifest.audit:
         parts += [
             "<h2>The audit report</h2>",
@@ -189,9 +220,16 @@ def _index(manifest: SiteManifest) -> str:
 
     parts.append("<h2>Compliance attestations</h2>")
     parts.append(
-        "<p class='note'>One per case, built from the append-only ledger. Five checks, each "
+        "<p class='note'>One per case, built from the append-only ledger. Six checks, each "
         "answering a question the ledger settles &mdash; and each able to come back negative. "
-        "A report that can only say &ldquo;pass&rdquo; attests to nothing.</p>"
+        "A report that can only say &ldquo;pass&rdquo; attests to nothing.<br><br>"
+        "These all read <b>no exceptions</b>, which is worth one sentence of explanation. "
+        "They did not always. This report is what found that a case had sent 39 pre-debit "
+        "notices and executed no debits &mdash; every one individually permitted, because a "
+        "statutory notice is exempt from the cooldown by design and nothing else counted them. "
+        "A ninth policy gate now caps them, and the check that found the hole was rewritten to "
+        "audit that gate rather than repeat its rule: it can now only fire if the gate "
+        "failed.</p>"
     )
     for entry in manifest.xrays:
         verdict = "NO EXCEPTIONS" if entry.verdict == "clean" else "EXCEPTIONS"

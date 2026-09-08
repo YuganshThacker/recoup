@@ -30,6 +30,32 @@ def test_the_index_links_every_page_it_generated(tmp_path: Path) -> None:
         assert entry.path in index
 
 
+def test_it_writes_the_worked_example(tmp_path: Path) -> None:
+    # The page most directly aligned with how the work is evaluated, and it is
+    # already static, so there is no reason for it to be console-only.
+    manifest = build_site(tmp_path, cases=12)
+
+    assert manifest.case_study == "case-study.html"
+    assert (tmp_path / "case-study.html").is_file()
+    assert "ALL THE WAY THROUGH" in (tmp_path / "case-study.html").read_text()
+
+
+def test_the_index_links_the_worked_example(tmp_path: Path) -> None:
+    build_site(tmp_path, cases=12)
+
+    assert "case-study.html" in (tmp_path / "index.html").read_text()
+
+
+def test_the_index_explains_why_the_reports_read_clean(tmp_path: Path) -> None:
+    # They did not always, and "everything passes" is the least persuasive
+    # thing a compliance page can say without saying why.
+    build_site(tmp_path, cases=12)
+
+    index = (tmp_path / "index.html").read_text()
+    assert "39 pre-debit notices" in index
+    assert "ninth policy gate" in index
+
+
 def test_it_carries_the_audit_report_when_one_exists(tmp_path: Path) -> None:
     source = tmp_path / "src"
     source.mkdir()
