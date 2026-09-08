@@ -1,0 +1,61 @@
+<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Worked example</title><link rel='icon' href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%2306080b'/><circle cx='16' cy='8' r='3' fill='%238397a8'/><circle cx='16' cy='16' r='3' fill='%233395ff'/><circle cx='16' cy='24' r='3' fill='%232fd47a'/></svg>"><style>
+:root{--ground:#06080b;--panel:#0a0e13;--line:#151f2a;--line-hot:#1e2c3b;
+  --dim:#546578;--mid:#8397a8;--text:#c7d4e0;--bright:#eaf2f9;
+  --blue:#3395ff;--green:#2fd47a;--refuse:#ff5f3d;--amber:#ffb020;
+  --mono:ui-monospace,"SF Mono","JetBrains Mono","Fira Code",Menlo,Consolas,monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--ground);color:var(--text);font:13px/1.55 var(--mono);padding:34px 30px 70px}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.4;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:60px 60px;mask-image:radial-gradient(ellipse 110% 70% at 50% 0%,#000 20%,transparent 72%)}
+.sheet{position:relative;z-index:1;max-width:1080px;margin:0 auto}
+h1{font-size:15px;letter-spacing:.3em;color:var(--bright);font-weight:700;text-align:center}
+.sub{font-size:10.5px;letter-spacing:.19em;color:var(--dim);text-transform:uppercase;text-align:center;margin-top:8px}
+
+.head{border:1px solid var(--line-hot);background:linear-gradient(180deg,#0b1119,#080c11);
+  padding:15px 20px;margin:22px 0 6px;display:flex;gap:26px;flex-wrap:wrap;align-items:center;justify-content:center}
+.head .k{font-size:9px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase;margin-right:8px}
+.head .v{font-size:15px;color:var(--bright)}
+.head .v b{color:var(--amber);font-weight:600}
+
+.stage{border-left:2px solid var(--line-hot);margin:0 0 0 14px;padding:22px 0 22px 26px;position:relative}
+.stage::before{content:"";position:absolute;left:-7px;top:26px;width:12px;height:12px;
+  background:var(--ground);border:2px solid var(--line-hot);border-radius:50%}
+.stage.detect::before{border-color:var(--mid)}
+.stage.diagnose::before{border-color:var(--amber)}
+.stage.intervene::before{border-color:var(--blue)}
+.stage.recover::before{border-color:var(--green)}
+.stage.measure::before{border-color:var(--green);background:var(--green)}
+.stage h2{font-size:12.5px;letter-spacing:.24em;color:var(--bright);font-weight:700;display:flex;align-items:baseline;gap:12px}
+.stage h2 .n{font-size:10px;color:var(--dim);letter-spacing:.1em}
+.stage.detect h2{color:var(--mid)}
+.stage.diagnose h2{color:var(--amber)}
+.stage.intervene h2{color:var(--blue)}
+.stage.recover h2,.stage.measure h2{color:var(--green)}
+.stage .blurb{font-size:11.5px;color:var(--dim);margin-top:7px;line-height:1.6;max-width:78ch}
+
+.step{display:flex;gap:14px;align-items:baseline;padding:8px 0;border-top:1px solid var(--line);margin-top:0}
+.step:first-of-type{margin-top:13px}
+.step .d{flex:0 0 54px;font-size:10px;letter-spacing:.08em;color:#3f4e5e;text-transform:uppercase}
+.step .s{flex:1;font-size:12.5px;word-break:break-word}
+.step .g{flex:0 0 auto;font-size:9.5px;color:var(--dim);letter-spacing:.05em}
+.step .g b{color:var(--green);font-weight:400}
+.step .g i{color:var(--refuse);font-style:normal}
+.step.good .s{color:var(--green);font-weight:600}
+.step.bad .s{color:var(--refuse)}
+
+.diag{border:1px solid #3a2a10;background:rgba(255,176,32,.05);padding:14px 17px;margin-top:13px}
+.diag .row{display:flex;gap:14px;align-items:baseline;padding:4px 0}
+.diag .k{flex:0 0 118px;font-size:9.5px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+.diag .v{font-size:13px;color:var(--text)}
+.diag .v b{color:var(--amber)}
+
+.result{border:1px solid #14432b;background:rgba(47,212,122,.06);padding:20px 24px;margin-top:14px;
+  display:flex;align-items:center;gap:26px;flex-wrap:wrap}
+.result .big{font-size:38px;font-weight:600;color:var(--green);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.result .k{font-size:9.5px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase}
+.result .v{font-size:14px;color:var(--text);margin-top:5px}
+.result .cell{display:flex;flex-direction:column}
+.foot{margin-top:26px;font-size:10.5px;color:var(--dim);line-height:1.75;text-align:center}
+.foot b{color:var(--mid);font-weight:400}
+</style></head><body><div class='sheet'><h1>ONE CASE, ALL THE WAY THROUGH</h1><div class='sub'>detect &middot; diagnose &middot; intervene &middot; recover &middot; measure</div><div class='head'><span><span class='k'>case</span><span class='v'>case_000108</span></span><span><span class='k'>at risk</span><span class='v'><b>Rs 4,999.00</b></span></span><span><span class='k'>gates run</span><span class='v'>36</span></span><span><span class='k'>window</span><span class='v'>2 days</span></span></div><div class='stage detect'><h2><span class='n'>01</span>DETECT</h2><div class='blurb'>A signed provider delivery, verified and deduped before a case exists.</div><div class='step'><span class='d'>day 0</span><span class='s'>payment.failed verified, delivery evt_case_000108</span></div><div class='step'><span class='d'>day 0</span><span class='s'>charge failed: insufficient_funds (soft)</span></div></div><div class='stage diagnose'><h2><span class='n'>02</span>DIAGNOSE</h2><div class='blurb'>The class decides what is even permitted. This is a conclusion, not an event, so it is derived rather than logged.</div><div class='diag'><div class='row'><span class='k'>provider said</span><span class='v'>insufficient_funds</span></div><div class='row'><span class='k'>class</span><span class='v'><b>SOFT</b></span></div><div class='row'><span class='k'>therefore</span><span class='v'>a retry can succeed; the only question is when</span></div></div></div><div class='stage intervene'><h2><span class='n'>03</span>INTERVENE</h2><div class='blurb'>What was proposed, which gates ran, and what they permitted or refused.</div><div class='step'><span class='d'>day 0</span><span class='s'>permitted: send_predebit_notice via sms [RP_PREDEBIT_01]</span><span class='g'><b>9</b> passed</span></div><div class='step'><span class='d'>day 1</span><span class='s'>permitted: retry_debit</span><span class='g'><b>9</b> passed</span></div><div class='step'><span class='d'>day 1</span><span class='s'>permitted: send_predebit_notice via sms [RP_PREDEBIT_01]</span><span class='g'><b>9</b> passed</span></div><div class='step'><span class='d'>day 2</span><span class='s'>permitted: retry_debit</span><span class='g'><b>9</b> passed</span></div></div><div class='stage recover'><h2><span class='n'>04</span>RECOVER</h2><div class='blurb'>The actions that actually reached the customer and the instrument.</div><div class='step'><span class='d'>day 0</span><span class='s'>sent RP_PREDEBIT_01 via sms</span></div><div class='step bad'><span class='d'>day 1</span><span class='s'>debit failed</span></div><div class='step'><span class='d'>day 1</span><span class='s'>sent RP_PREDEBIT_01 via sms</span></div><div class='step good'><span class='d'>day 2</span><span class='s'>debit succeeded</span></div></div><div class='stage measure'><h2><span class='n'>05</span>MEASURE</h2><div class='blurb'>The outcome, and whether it is attributable to what we did.</div><div class='step good'><span class='d'>day 2</span><span class='s'>recovered (attributed)</span></div></div><div class='result'><div class='cell'><div class='k'>recovered</div><div class='big'>Rs 4,999.00</div></div><div class='cell'><div class='k'>attribution</div><div class='v'>attributed, not organic</div></div><div class='cell'><div class='k'>cost</div><div class='v'>2 debit attempts &middot; 2 messages</div></div><div class='cell'><div class='k'>gates</div><div class='v'>36 run</div></div></div><div class='foot'>The loop closed on a payment, not a chart. Recovery is <b>attributed</b> only when the invoice was paid inside the observation window; a customer who paid unprompted is counted as organic and excluded from lift.<br>Simulated outcome. The delivery verification, the decline taxonomy, the gates and the audit trail are not.</div></div></body></html>
