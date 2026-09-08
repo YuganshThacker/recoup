@@ -237,6 +237,21 @@ def test_the_downtime_panel_is_readable_without_credentials() -> None:
         assert payload["reason"]
 
 
+def test_the_worked_example_is_served() -> None:
+    response = _get(build_router(ControlRoom()), "/case-study")
+
+    assert response.status == 200  # type: ignore[attr-defined]
+    assert b"ONE CASE, ALL THE WAY THROUGH" in response.body  # type: ignore[attr-defined]
+
+
+def test_the_worked_example_api_walks_all_five_stages() -> None:
+    payload = _payload(_get(build_router(ControlRoom()), "/api/case-study"))
+
+    names = [s["name"] for s in payload["stages"]]  # type: ignore[index,union-attr]
+    assert names == ["DETECT", "INTERVENE", "RECOVER", "MEASURE"]
+    assert payload["attributed"] is True
+
+
 def test_the_results_view_is_served() -> None:
     response = _get(build_router(ControlRoom()), "/results")
 

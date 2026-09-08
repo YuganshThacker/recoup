@@ -23,6 +23,8 @@ from recovery.detect import Detector, delivery_for, sign_delivery
 from recovery.domain.events import Actor, Ledger
 from recovery.domain.money import format_inr
 from recovery.live.broadcast import BroadcastLedger
+from recovery.live.casestudy import build_case_study
+from recovery.live.casestudy_page import render_case_study
 from recovery.live.console import render_console
 from recovery.live.demo import DEMO_SEED, DemoClient
 from recovery.live.downtime import DowntimeSource
@@ -423,6 +425,15 @@ def build_router(room: ControlRoom) -> Router:
             range_header=request.header("Range"),
         )
 
+    def case_study(_request: Request, **_params: str) -> Response:
+        return html_response(render_case_study(build_case_study()))
+
+    def case_study_data(_request: Request, **_params: str) -> Response:
+        study = build_case_study()
+        if study is None:
+            return json_response({"error": "no attributable recovery in this batch"}, status=404)
+        return json_response(study.payload())
+
     def results(_request: Request, **_params: str) -> Response:
         return html_response(render_results(read_results()))
 
@@ -478,6 +489,8 @@ def build_router(room: ControlRoom) -> Router:
     router.get("/api/case/<case_id>", case)
     router.get("/case/<case_id>/xray", xray)
     router.get("/api/downtime", downtime)
+    router.get("/case-study", case_study)
+    router.get("/api/case-study", case_study_data)
     router.get("/results", results)
     router.get("/api/results", results_data)
     router.get("/race", race)
