@@ -12,6 +12,9 @@ string in a template.
 
 from __future__ import annotations
 
+import json
+from typing import Any
+
 _STYLE = """
 :root{
   --ground:#06080b;--panel:#0a0e13;--line:#151f2a;--line-hot:#1e2c3b;
@@ -133,9 +136,11 @@ function paint(arm, node, speed){
   return rows.length;
 }
 
+/* INLINE is the race baked in at render time, for the static build. The
+   console leaves it null and fetches instead, so both forms run the same
+   rendering path rather than diverging into two pages. */
 async function load(){
-  const r = await fetch("/api/race" + location.search);
-  const d = await r.json();
+  const d = INLINE || await (await fetch("/api/race" + location.search)).json();
   if (d.error) { el("arms").innerHTML = '<div class="loading">' + d.error + "</div>"; return; }
 
   el("truth-amount").textContent = inr(d.amount_paise);
@@ -177,8 +182,15 @@ load();
 """
 
 
-def render_race() -> str:
-    """One self-contained page. Every figure comes from the API."""
+def render_race(data: dict[str, Any] | None = None) -> str:
+    """One self-contained page.
+
+    Served by the console it fetches ``/api/race``. Given ``data`` it bakes the
+    race in and fetches nothing, which is what lets the same page go onto the
+    static evidence site -- the strongest asset here should not be the one a
+    remote reviewer cannot reach.
+    """
+    inline = "null" if data is None else _embed(data)
     return (
         "<!doctype html><html lang='en'><head><meta charset='utf-8'>"
         "<meta name='viewport' content='width=device-width,initial-scale=1'>"
@@ -207,7 +219,7 @@ def render_race() -> str:
         "<span class='sim'>simulation</span>"
         "<div class='note' id='note'></div>"
         "</footer>"
-        f"</div><script>{_SCRIPT}</script></body></html>"
+        f"</div><script>const INLINE={inline};{_SCRIPT}</script></body></html>"
     )
 
 
@@ -220,3 +232,12 @@ def _arm_markup(side: str) -> str:
         "<span class='cost'></span></div>"
         "</div>"
     )
+
+
+def _embed(data: dict[str, Any]) -> str:
+    """JSON safe to sit inside a <script> element.
+
+    ``</`` is escaped because a closing tag anywhere in the payload -- a case id,
+    a summary string -- would end the script early and blank the page.
+    """
+    return json.dumps(data, separators=(",", ":")).replace("</", "<\\/")

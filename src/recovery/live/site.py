@@ -25,6 +25,8 @@ from recovery.domain.events import AuditEvent, EventKind
 from recovery.live.app import ControlRoom
 from recovery.live.casestudy import build_case_study
 from recovery.live.casestudy_page import render_case_study
+from recovery.live.race_page import render_race
+from recovery.live.replay import find_divergent_cases, replay_case
 from recovery.live.xray import Xray, build_xray
 from recovery.live.xray_page import render_xray
 
@@ -49,6 +51,10 @@ class SiteManifest:
     xrays: tuple[XrayEntry, ...]
     audit: str | None
     built_at: str
+    race: str | None = None
+    """The counterfactual race, baked in. Console-only until now, which made
+    the most watchable thing here the one a remote reviewer could not reach."""
+
     case_study: str | None = None
     """The worked example. Server-rendered from a real run and fully static, so
     it drops onto the site unchanged -- which matters, because it is the page
@@ -99,12 +105,14 @@ def build_site(
 
     audit = _copy_audit(out, audit_report)
     case_study = _write_case_study(out)
+    race = _write_race(out)
 
     manifest = SiteManifest(
         xrays=tuple(entries),
         audit=audit,
         built_at=datetime.now(UTC).strftime("%d %B %Y"),
         case_study=case_study,
+        race=race,
     )
     (out / "index.html").write_text(_index(manifest), encoding="utf-8")
 
@@ -124,6 +132,15 @@ def _entry(case_id: str, name: str, report: Xray) -> XrayEntry:
         contacts=len(report.contacts),
         events=report.events,
     )
+
+
+def _write_race(out: Path) -> str | None:
+    """Render the race with its data baked in, or nothing if none diverges."""
+    hero = find_divergent_cases().hero
+    if hero is None:
+        return None
+    (out / "race.html").write_text(render_race(replay_case(hero).payload()), encoding="utf-8")
+    return "race.html"
 
 
 def _write_case_study(out: Path) -> str | None:
@@ -198,6 +215,17 @@ def _index(manifest: SiteManifest) -> str:
         "These are the records it produces. Nothing here is a control surface: there is "
         "nothing to trigger and no state to change.</p>",
     ]
+
+    if manifest.race:
+        parts += [
+            "<h2>The counterfactual</h2>",
+            f"<a class='card' href='{manifest.race}'>",
+            "<div class='t'>Same case, both policies, identical ground truth</div>",
+            "<div class='d'>One case replayed twice, varying only the planner. The platform "
+            "default retries before the money exists and exhausts its attempt budget; the "
+            "system waits and takes one attempt. Nothing about the customer or the world "
+            "changed.</div></a>",
+        ]
 
     if manifest.case_study:
         parts += [

@@ -30,6 +30,22 @@ def test_the_index_links_every_page_it_generated(tmp_path: Path) -> None:
         assert entry.path in index
 
 
+def test_it_writes_the_race_with_its_data_baked_in(tmp_path: Path) -> None:
+    # The static copy must not fetch: there is no API behind it on the site.
+    manifest = build_site(tmp_path, cases=12)
+
+    assert manifest.race == "race.html"
+    page = (tmp_path / "race.html").read_text()
+    assert "const INLINE=null" not in page
+    assert '"case_id"' in page
+
+
+def test_the_index_links_the_race(tmp_path: Path) -> None:
+    build_site(tmp_path, cases=12)
+
+    assert "race.html" in (tmp_path / "index.html").read_text()
+
+
 def test_it_writes_the_worked_example(tmp_path: Path) -> None:
     # The page most directly aligned with how the work is evaluated, and it is
     # already static, so there is no reason for it to be console-only.
