@@ -45,6 +45,7 @@ GATE_NAMES: tuple[str, ...] = (
     "suppression",
     "mandate",
     "attempt_budget",
+    "notice_budget",
     "quiet_hours",
     "cooldown",
     "template",
@@ -394,20 +395,20 @@ def _c5(events: list[AuditEvent]) -> Check:
 
 
 def _c6(contacts: tuple[Contact, ...], debits: tuple[MoneyAction, ...]) -> Check:
-    """Notices announce debits. Announcing far more than can ever happen is wrong.
+    """A watchdog on ``gate_notice_budget``, not a second copy of its rule.
 
-    The ceiling comes from the attempt budget rather than a number picked here:
-    a case may attempt at most ``INTERNAL_MAX_ATTEMPTS_PER_CASE`` debits, and RBI
-    requires a notice before each, so notices beyond that are announcing debits
-    the system has already forbidden itself from making.
+    This check found the hole first: a case that had sent 39 pre-debit notices
+    and executed zero debits, every notice individually permitted, no gate
+    objecting. That is now enforced by a ninth gate.
+
+    So the report no longer re-litigates the policy -- it audits it. The ceiling
+    here is the *gate's* ceiling, which means this can only fire if the gate
+    failed to do its job. An exception on C6 is now a statement about the
+    control, not about the case.
     """
     notices = [c for c in contacts if c.template_id == "RP_PREDEBIT_01"]
-    ceiling = K.INTERNAL_MAX_ATTEMPTS_PER_CASE
-    # Both conditions, deliberately. A case that spent its whole attempt budget
-    # legitimately sends a notice per debit plus one whose debit was then refused
-    # for some other reason -- five notices against four debits is correct
-    # behaviour, and flagging it would train a reader to ignore this check.
-    excessive = len(notices) > ceiling and len(notices) > len(debits) + 1
+    ceiling = K.MAX_PREDEBIT_NOTICES_PER_CASE
+    excessive = len(notices) > ceiling
 
     return Check(
         code="C6",
@@ -419,12 +420,10 @@ def _c6(contacts: tuple[Contact, ...], debits: tuple[MoneyAction, ...]) -> Check
         ),
         evidence=(
             (
-                f"{len(notices)} notices against {len(debits)} debit(s), over a "
-                f"{ceiling}-attempt budget: debits were announced that the system had "
-                "already forbidden itself from making",
-                "no gate refused any of them. A statutory notice is exempt from the "
-                "cooldown by design, and nothing else caps the count -- so this is a "
-                "report-level finding, not an enforced control",
+                f"{len(notices)} notices against {len(debits)} debit(s), over the "
+                f"{ceiling} that gate_notice_budget permits",
+                "that gate should have refused these. An exception here means the "
+                "control did not hold, which is what this check now exists to catch",
             )
             if excessive
             else ()

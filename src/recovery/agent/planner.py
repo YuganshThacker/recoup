@@ -8,7 +8,7 @@ turns, after which the deterministic planner takes over.
 
 This is what "bounded and gated" means concretely. The model never widens its
 own permissions, and every path out of this function has been through the same
-eight gates as a rules-proposed action:
+nine gates as a rules-proposed action:
 
 * a permitted proposal is returned
 * a refused proposal is re-planned, then falls back

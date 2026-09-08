@@ -16,8 +16,9 @@ from recovery.domain.case import RecoveryCase
 from recovery.domain.events import InMemoryLedger, Ledger
 from recovery.domain.failure import DeclineClass, PaymentMethod
 from recovery.domain.money import paise
+from recovery.policy import constants as K
 from recovery.policy.actions import ActionKind, Channel, ProposedAction
-from recovery.policy.decision import RefusalCode
+from recovery.policy.decision import GateName, RefusalCode
 from recovery.policy.engine import PolicyEngine, remediation_plan
 from recovery.policy.gates import (
     MessageTemplate,
@@ -27,10 +28,12 @@ from recovery.policy.gates import (
     gate_consent,
     gate_cooldown,
     gate_mandate,
+    gate_notice_budget,
     gate_quiet_hours,
     gate_suppression,
     gate_template,
 )
+from recovery.templates import bind_variables
 
 # 10:30 IST -- comfortably inside the 08:00-19:00 contact window.
 NOON_IST = datetime(2026, 8, 23, 5, 0, tzinfo=UTC)
@@ -423,7 +426,7 @@ def test_engine_runs_every_gate_without_short_circuiting() -> None:
         case=make_case(attempts=4),
     )
     decision = PolicyEngine().evaluate(retry_debit(), ctx)
-    assert len(decision.results) == 8
+    assert len(decision.results) == 9
     assert RefusalCode.PREDEBIT_NOTICE_REQUIRED in decision.codes
     assert RefusalCode.INTERNAL_ATTEMPT_CAP in decision.codes
 
@@ -439,7 +442,7 @@ def test_payload_records_passing_gates_too() -> None:
     payload = PolicyEngine().evaluate(retry_debit(), make_ctx()).to_payload()
     gates = payload["gates"]
     assert isinstance(gates, list)
-    assert len(gates) == 8
+    assert len(gates) == 9
     assert all(g["passed"] for g in gates)  # type: ignore[index]
 
 
@@ -492,3 +495,80 @@ def test_opt_out_is_reported_as_permanently_blocked() -> None:
 def test_notice_refusal_yields_a_usable_remediation_plan() -> None:
     decision = PolicyEngine().evaluate(retry_debit(), make_ctx(predebit_notice_sent_at=None))
     assert remediation_plan(decision) == [ActionKind.SEND_PREDEBIT_NOTICE]
+
+
+# --- 9. notice budget ------------------------------------------------------
+
+
+def _notice(variables: dict[str, str] | None = None) -> ProposedAction:
+    return ProposedAction(
+        kind=ActionKind.SEND_PREDEBIT_NOTICE,
+        channel=Channel.SMS,
+        template_id="RP_PREDEBIT_01",
+        variables=variables if variables is not None else bind_variables("RP_PREDEBIT_01"),
+    )
+
+
+def test_a_first_notice_is_permitted() -> None:
+    ctx = make_ctx(notices_sent=0)
+
+    assert gate_notice_budget(_notice(), ctx).passed
+
+
+def test_notices_are_permitted_up_to_the_ceiling() -> None:
+    # One per permitted attempt, plus slack for a notice whose debit was then
+    # refused on another gate or which went stale before it could be used.
+    ctx = make_ctx(notices_sent=K.MAX_PREDEBIT_NOTICES_PER_CASE - 1)
+
+    assert gate_notice_budget(_notice(), ctx).passed
+
+
+def test_a_notice_past_the_ceiling_is_refused() -> None:
+    """The hole this gate exists to close.
+
+    A pre-debit notice announces a debit. It is exempt from the cooldown by
+    design -- withholding a statutory disclosure to satisfy an internal comfort
+    rule is the worse failure -- and before this gate nothing else capped it.
+    Our own compliance report found a case that sent 39 notices and executed
+    zero debits: 39 announcements of a debit that never came, every one of them
+    individually permitted.
+    """
+    ctx = make_ctx(notices_sent=K.MAX_PREDEBIT_NOTICES_PER_CASE)
+
+    result = gate_notice_budget(_notice(), ctx)
+
+    assert not result.passed
+    assert result.code is RefusalCode.NOTICE_CAP_REACHED
+    assert result.remediation is ActionKind.STOP
+
+
+def test_the_refusal_says_how_many_were_sent() -> None:
+    result = gate_notice_budget(_notice(), make_ctx(notices_sent=9))
+
+    assert "9" in result.explanation
+
+
+def test_the_cap_does_not_touch_other_actions() -> None:
+    # It caps announcements of a debit, not every message. A payment link or an
+    # instrument-update request is governed by cooldown and economics.
+    ctx = make_ctx(notices_sent=99)
+
+    for kind in (ActionKind.SEND_REMINDER, ActionKind.SEND_PAYMENT_LINK, ActionKind.RETRY_DEBIT):
+        assert gate_notice_budget(ProposedAction(kind=kind), ctx).passed
+
+
+def test_the_engine_runs_the_notice_budget_gate() -> None:
+    decision = PolicyEngine().evaluate(_notice(), make_ctx(notices_sent=0))
+
+    assert any(r.gate is GateName.NOTICE_BUDGET for r in decision.results)
+
+
+def test_a_capped_case_cannot_notice_its_way_around_the_attempt_budget() -> None:
+    # End to end through the real engine: the whole point is that a case which
+    # has stopped debiting also stops announcing debits.
+    decision = PolicyEngine().evaluate(
+        _notice(), make_ctx(notices_sent=K.MAX_PREDEBIT_NOTICES_PER_CASE)
+    )
+
+    assert not decision.permitted
+    assert any(r.code is RefusalCode.NOTICE_CAP_REACHED for r in decision.results if not r.passed)

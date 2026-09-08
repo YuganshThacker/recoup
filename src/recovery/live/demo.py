@@ -8,7 +8,7 @@ seconds.
 **It is a stand-in, not a mock of the outcome.** It reads the same prompt
 :func:`~recovery.agent.planner.build_prompt` hands a real model, returns through
 the same ``ModelReply``, and is validated by the same schema and gated by the
-same eight gates. What is fixed is only *which* mistake happens when, so the
+same nine gates. What is fixed is only *which* mistake happens when, so the
 refusal-and-re-plan beat lands on cue instead of whenever a live model happens
 to overreach. Live runs take the identical path: ``docs/RESULTS.md`` records 158
 refusals and 17 schema rejections in one, unprompted.

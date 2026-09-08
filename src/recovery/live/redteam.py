@@ -327,7 +327,7 @@ def _afa_ceiling(ledger: Ledger | None) -> AttackResult:
         "so the notice rule is satisfied and the amount is the only obstacle",
         *_refusal_lines(refusals),
         *(f"unblocked by: {remedy}" for remedy in remedies),
-        f"gates evaluated: {len(decision.results)} of {len(decision.results)} — none skipped",
+        f"gates evaluated: {len(decision.results)} of {len(decision.results)} - none skipped",
     )
     return AttackResult.build(
         "afa_ceiling",

@@ -60,6 +60,14 @@ DEFAULT_30D_ATTEMPT_LIMIT = 10
 # ceiling we must not approach.
 INTERNAL_MAX_ATTEMPTS_PER_CASE = 4
 
+# A pre-debit notice announces a debit, so the number of notices a case may send
+# is bounded by the number of debits it may attempt -- plus slack for a notice
+# whose debit was then refused on another gate, or which went stale before it
+# could be used. Derived rather than picked: without this bound nothing capped
+# notices at all, because they are exempt from the cooldown by design, and one
+# case in a 60-case run sent 39 of them while executing no debits.
+MAX_PREDEBIT_NOTICES_PER_CASE = INTERNAL_MAX_ATTEMPTS_PER_CASE + 2
+
 # --- Channel unit economics ------------------------------------------------
 # ESTIMATE. WhatsApp figures track published India per-message rates; SMS and
 # voice are order-of-magnitude operating assumptions. Exact values matter less

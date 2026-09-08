@@ -22,7 +22,7 @@ free-form speaker in front of a customer discussing a debt -- which is the
 exact thing DLT template registration exists to prevent, and the exact
 property the rest of this system is built around not having.
 
-Placing the call is an ordinary contact action. It goes through all eight
+Placing the call is an ordinary contact action. It goes through all nine
 gates first: consent for the voice channel, the 08:00-19:00 window in the
 recipient's timezone, and ``gate_channel_economics``, which prices a call at
 400p against 20p for an SMS and refuses when the expected recovery does not

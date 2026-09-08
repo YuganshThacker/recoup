@@ -203,7 +203,7 @@ def test_the_gates_run_before_the_call_is_placed() -> None:
 
     decision = session.open().decision
 
-    assert len(decision.results) == 8, "all eight, same as any other contact action"
+    assert len(decision.results) == 9, "all nine, same as any other contact action"
 
 
 def test_a_call_outside_the_contact_window_is_refused() -> None:

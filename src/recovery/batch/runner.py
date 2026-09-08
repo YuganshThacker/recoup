@@ -107,6 +107,7 @@ class _RunState:
     now: datetime
     closes_at: datetime
     notice_sent_at: datetime | None = None
+    notices_sent: int = 0
     last_contact_at: datetime | None = None
     """When this case last put something in front of the customer.
 
@@ -153,6 +154,7 @@ def _context(sim: SimCase, state: _RunState) -> PolicyContext:
         consented_purposes=frozenset({"payment_recovery"}),
         templates=REGISTERED,
         predebit_notice_sent_at=state.notice_sent_at,
+        notices_sent=state.notices_sent,
         last_contact_at=state.last_contact_at,
         downtime_active=_downtime_active(sim, state.now),
         downtime_expected_end=sim.truth.downtime_ends_at,
@@ -321,6 +323,7 @@ def _perform(
 
     if kind is ActionKind.SEND_PREDEBIT_NOTICE:
         state.notice_sent_at = state.now
+        state.notices_sent += 1
     elif kind is ActionKind.REQUEST_INSTRUMENT_UPDATE:
         state.repair_requested = True
         state.repaired = provider.accept_instrument_repair(case.case_id)

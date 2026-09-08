@@ -119,7 +119,7 @@ something to notice and flag as hypothesis-generating; it is not a result and wi
 as one:
 
 - recovery rate by decline class (hard / soft / downtime)
-- policy blocks by gate (8 gates)
+- policy blocks by gate (9 gates)
 - stopping-rule firings by rule
 - actions per recovered case
 - ₹ cost per ₹ recovered

@@ -37,7 +37,7 @@ and playbooks, not a new spine.
 ```mermaid
 flowchart LR
     A[UNDERSTAND<br/>diagnose the failure] --> B[DECIDE<br/>rules or model]
-    B --> C[GOVERN<br/>eight policy gates]
+    B --> C[GOVERN<br/>nine policy gates]
     C --> D[ACT<br/>execute or refuse]
     D --> E[PROVE<br/>audit + measure]
     C -. structured refusal .-> B
@@ -79,10 +79,10 @@ That's the measured price of the safety choice, and it's reported.
 
 ## 4. GOVERN — the policy engine
 
-Eight gates, ordered from "can never be allowed" to "allowed but not worth it":
+Nine gates, ordered from "can never be allowed" to "allowed but not worth it":
 
 ```
-consent → suppression → mandate → attempt_budget
+consent → suppression → mandate → attempt_budget → notice_budget
         → quiet_hours → cooldown → template → channel_economics
 ```
 
@@ -98,7 +98,7 @@ unit-testable without a database or a fake time library.
 plays whack-a-mole across several turns; handed all of them, it re-plans once. And
 a compliance engine that stops at the first failure **cannot demonstrate the
 remaining gates were evaluated** — passing results are what turn the ledger into
-evidence. The checks are pure in-memory functions, so running all eight is free.
+evidence. The checks are pure in-memory functions, so running all nine is free.
 
 ### Decision: refusals are structured objects, not error strings
 
@@ -172,7 +172,7 @@ rules path and the agent path cannot diverge in what may reach a customer.
 
 ### The re-plan loop
 
-Bounded to two re-plans. Every exit path has been through the same eight gates:
+Bounded to two re-plans. Every exit path has been through the same nine gates:
 permitted → returned; refused → re-planned then falls back; malformed → falls
 back; model unavailable → falls back. **The fallback is not an error path — it is
 the system's floor**, and R2 measures whether the model clears it.

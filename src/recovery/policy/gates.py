@@ -1,4 +1,4 @@
-"""The eight gates.
+"""The nine gates.
 
 Each gate is a pure function of ``(action, context) -> GateResult``. No I/O, no
 clock of its own, no hidden state -- everything a gate needs arrives in the
@@ -65,6 +65,11 @@ class PolicyContext:
 
     # attempt budget
     attempts_last_30d: int = 0
+    notices_sent: int = 0
+    """Pre-debit notices already sent on this case. Without it nothing bounded
+    them: a notice is exempt from the cooldown by design, and no other rule
+    counted them."""
+
     card_network: str | None = None
 
     # downtime
@@ -263,7 +268,49 @@ def gate_attempt_budget(action: ProposedAction, ctx: PolicyContext) -> GateResul
     )
 
 
-# --- 5. quiet hours --------------------------------------------------------
+# --- 5. notice budget ------------------------------------------------------
+
+
+def gate_notice_budget(action: ProposedAction, ctx: PolicyContext) -> GateResult:
+    """Caps how many times a case may announce a debit it has not made.
+
+    A pre-debit notice is statutorily required before each e-mandate debit, and
+    it is deliberately exempt from the cooldown -- withholding a legally
+    required disclosure to satisfy an internal comfort rule means a late notice
+    or a missed debit, and the customer loses their opt-out window either way.
+
+    That exemption left a hole. Nothing else counted notices, so a case could
+    send them indefinitely while never debiting. The compliance report found
+    one that sent **39 notices and executed zero debits**: 39 announcements of
+    a debit that never came, every one individually permitted, no gate
+    objecting.
+
+    The ceiling is derived rather than chosen. A case may attempt at most
+    ``INTERNAL_MAX_ATTEMPTS_PER_CASE`` debits and each needs a notice, plus
+    slack for a notice whose debit was refused on another gate or which went
+    stale first. Beyond that the case is announcing debits it has already
+    forbidden itself from making, and the answer is to stop rather than to keep
+    notifying.
+    """
+    g = GateName.NOTICE_BUDGET
+    if action.kind is not ActionKind.SEND_PREDEBIT_NOTICE:
+        return GateResult.allow(g, "action is not a pre-debit notice")
+
+    if ctx.notices_sent >= K.MAX_PREDEBIT_NOTICES_PER_CASE:
+        return GateResult.refuse(
+            g,
+            RefusalCode.NOTICE_CAP_REACHED,
+            f"{ctx.notices_sent} notices sent against a ceiling of "
+            f"{K.MAX_PREDEBIT_NOTICES_PER_CASE}; this case is announcing debits it "
+            "cannot make",
+            remediation=ActionKind.STOP,
+        )
+    return GateResult.allow(
+        g, f"notice {ctx.notices_sent + 1} of {K.MAX_PREDEBIT_NOTICES_PER_CASE}"
+    )
+
+
+# --- 6. quiet hours --------------------------------------------------------
 
 
 def _next_window_open(now: datetime) -> datetime:
@@ -300,7 +347,7 @@ def gate_quiet_hours(action: ProposedAction, ctx: PolicyContext) -> GateResult:
     )
 
 
-# --- 6. cooldown -----------------------------------------------------------
+# --- 7. cooldown -----------------------------------------------------------
 
 
 def gate_cooldown(action: ProposedAction, ctx: PolicyContext) -> GateResult:
@@ -324,7 +371,7 @@ def gate_cooldown(action: ProposedAction, ctx: PolicyContext) -> GateResult:
     return GateResult.allow(g, "cooldown satisfied")
 
 
-# --- 7. template -----------------------------------------------------------
+# --- 8. template -----------------------------------------------------------
 
 
 def gate_template(action: ProposedAction, ctx: PolicyContext) -> GateResult:
@@ -362,7 +409,7 @@ def gate_template(action: ProposedAction, ctx: PolicyContext) -> GateResult:
     return GateResult.allow(g, f"'{template.template_id}' bound with {len(supplied)} variables")
 
 
-# --- 8. channel economics --------------------------------------------------
+# --- 9. channel economics --------------------------------------------------
 
 
 def expected_recovery(ctx: PolicyContext) -> Paise:
@@ -410,6 +457,7 @@ ALL_GATES = (
     gate_suppression,
     gate_mandate,
     gate_attempt_budget,
+    gate_notice_budget,
     gate_quiet_hours,
     gate_cooldown,
     gate_template,

@@ -49,6 +49,7 @@ def _gates(**overrides: bool) -> list[dict[str, object]]:
         "suppression",
         "mandate",
         "attempt_budget",
+        "notice_budget",
         "quiet_hours",
         "cooldown",
         "template",
@@ -152,6 +153,7 @@ def test_it_tallies_every_gate_across_the_case() -> None:
         "suppression",
         "mandate",
         "attempt_budget",
+        "notice_budget",
         "quiet_hours",
         "cooldown",
         "template",
@@ -514,12 +516,28 @@ def test_the_volume_check_says_what_it_counted() -> None:
     assert "39" in detail
 
 
-def test_the_volume_check_is_reported_as_a_report_level_finding() -> None:
-    # No gate prevents this today. The x-ray must not imply otherwise.
-    xray = build_xray("case_x", _notices(39))
-    check = next(c for c in xray.checks if c.code == "C6")
+def test_the_volume_check_audits_the_gate_rather_than_repeating_it() -> None:
+    # C6 found the hole; a ninth gate now enforces it. The check's job changed:
+    # it fires only if that gate failed, so it is a statement about the control.
+    check = next(c for c in build_xray("case_x", _notices(39)).checks if c.code == "C6")
 
-    assert "no gate" in " ".join(check.evidence).lower()
+    assert "gate_notice_budget" in " ".join(check.evidence)
+
+
+def test_exactly_the_permitted_number_of_notices_is_not_an_exception() -> None:
+    from recovery.policy import constants as K
+
+    xray = build_xray("case_x", _notices(K.MAX_PREDEBIT_NOTICES_PER_CASE))
+
+    assert all(c.passed for c in xray.checks if c.code == "C6")
+
+
+def test_one_notice_past_what_the_gate_permits_is_an_exception() -> None:
+    from recovery.policy import constants as K
+
+    xray = build_xray("case_x", _notices(K.MAX_PREDEBIT_NOTICES_PER_CASE + 1))
+
+    assert any(c.code == "C6" and not c.passed for c in xray.checks)
 
 
 # --- what it refuses to claim ----------------------------------------------

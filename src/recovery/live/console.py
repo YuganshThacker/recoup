@@ -145,7 +145,10 @@ footer{grid-column:1/3;border-top:1px solid var(--line-hot);background:linear-gr
 .gm{display:flex;flex:1}
 .g{flex:1;min-width:0;border-right:1px solid var(--line);padding:9px 10px;position:relative;transition:background .18s}
 .g:last-child{border-right:0}
-.g .name{font-size:9px;letter-spacing:.06em;color:var(--mid);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g .name{font-size:8.5px;letter-spacing:.04em;color:var(--mid);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Nine cells leave no room for the badge to sit over the label, so the
+   failing cell reserves space for it rather than colliding. */
+.g.fail .name{padding-right:52px}
 .g .tally{font-size:9px;color:var(--dim);margin-top:6px;font-variant-numeric:tabular-nums}
 .g .bar{position:absolute;left:0;bottom:0;height:2px;width:100%;background:var(--line)}
 .g .bar i{display:block;height:100%;width:0;background:var(--refuse);transition:width .3s}
@@ -153,7 +156,7 @@ footer{grid-column:1/3;border-top:1px solid var(--line-hot);background:linear-gr
 .g.pass .name{color:var(--green)}
 .g.fail{background:rgba(255,95,61,.13)}
 .g.fail .name{color:var(--refuse)}
-.g.fail::after{content:"REFUSED";position:absolute;top:10px;right:12px;font-size:8px;letter-spacing:.14em;color:var(--refuse)}
+.g.fail::after{content:"REFUSED";position:absolute;top:9px;right:10px;font-size:7.5px;letter-spacing:.1em;color:var(--refuse)}
 
 /* ---------- voice ---------- */
 button.call{border-color:#14432b;color:#8ef0bd}
@@ -258,7 +261,7 @@ button.rt:hover:not(:disabled){border-color:var(--refuse);color:#ffd0c4;backgrou
         <div class="k">spent</div><div class="v" id="v-spent">&#8377;0</div></div>
       <div class="ro refuse" data-src="Count of action_refused events. Every one is a money action the policy engine declined to take, with a named rule and a named remedy.">
         <div class="k">refused</div><div class="v" id="v-ref">0</div></div>
-      <div class="ro gates" data-src="Sum of the gates array across every policy_evaluated and action_refused event. All eight gates run on every decision -- no short-circuit -- which is what makes the passes evidence too.">
+      <div class="ro gates" data-src="Sum of the gates array across every policy_evaluated and action_refused event. All nine gates run on every decision -- no short-circuit -- which is what makes the passes evidence too.">
         <div class="k">gates run</div><div class="v" id="v-gates">0</div></div>
       <div class="ro" data-src="Spent divided by recovered, both derived above. The measured figure across the 900-case R1 batch was Rs 0.0028 per rupee recovered.">
         <div class="k">cost per &#8377;1</div><div class="v" id="v-cpr">&#8377;0.0000</div></div>
@@ -295,7 +298,7 @@ button.rt:hover:not(:disabled){border-color:var(--refuse);color:#ffd0c4;backgrou
   <footer>
     <div class="gm-h">
       <div class="t">GATE MATRIX</div>
-      <div class="d">All eight, every decision. Live cell = the most recent evaluation.</div>
+      <div class="d">All nine, every decision. Live cell = the most recent evaluation.</div>
     </div>
     <div class="gm" id="gm"></div>
   </footer>
@@ -367,7 +370,7 @@ const LANES=[["01","UNDERSTAND",["case_detected","diagnosis_produced"]],
              ["03","GOVERN",["policy_evaluated","action_refused"]],
              ["04","ACT",["action_executed","notice_sent","action_scheduled","action_deduped","provider_callback"]],
              ["05","PROVE",["outcome_recorded","case_stopped","correction"]]];
-const GATES=["consent","suppression","mandate","attempt_budget","quiet_hours","cooldown","template","channel_economics"];
+const GATES=["consent","suppression","mandate","attempt_budget","notice_budget","quiet_hours","cooldown","template","channel_economics"];
 const MAX_CARDS=26, MAX_REEL=14;
 
 const laneOf={}, laneEl={}, laneCount={};

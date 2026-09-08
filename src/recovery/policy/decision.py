@@ -27,12 +27,13 @@ from recovery.policy.actions import ActionKind, ProposedAction
 
 
 class GateName(StrEnum):
-    """The eight gates. Every action clears all of them or it does not execute."""
+    """The nine gates. Every action clears all of them or it does not execute."""
 
     CONSENT = "consent"
     SUPPRESSION = "suppression"
     MANDATE = "mandate"
     ATTEMPT_BUDGET = "attempt_budget"
+    NOTICE_BUDGET = "notice_budget"
     QUIET_HOURS = "quiet_hours"
     COOLDOWN = "cooldown"
     TEMPLATE = "template"
@@ -62,6 +63,9 @@ class RefusalCode(StrEnum):
     HARD_DECLINE_NO_RETRY = "hard_decline_no_retry"
     UNCLASSIFIED_DECLINE_NO_RETRY = "unclassified_decline_no_retry"
     DOWNTIME_ACTIVE = "downtime_active"
+
+    # notice budget
+    NOTICE_CAP_REACHED = "notice_cap_reached"
 
     # attempt budget
     INTERNAL_ATTEMPT_CAP = "internal_attempt_cap"

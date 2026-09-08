@@ -145,7 +145,7 @@ def _timeline(ledger: Ledger, case_id: str) -> list[dict[str, Any]]:
         if isinstance(gates, list):
             # Passing gates keep their name only. That a gate ran and allowed the
             # action is the audit-relevant fact; its prose is not, and carrying it
-            # for eight gates on every event triples the file for no added
+            # for nine gates on every event triples the file for no added
             # evidence. Refusals keep everything -- they are the interesting rows.
             entry["gates"] = [_gate(g) for g in gates]
         events.append(entry)

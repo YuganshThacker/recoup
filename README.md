@@ -47,7 +47,7 @@ and calling it a debit.
 ```mermaid
 flowchart LR
     A[UNDERSTAND<br/>diagnose] --> B[DECIDE<br/>rules or model]
-    B --> C[GOVERN<br/>eight gates]
+    B --> C[GOVERN<br/>nine gates]
     C --> D[ACT<br/>execute]
     D --> E[PROVE<br/>audit + measure]
     C -. structured refusal .-> B
