@@ -52,6 +52,7 @@ select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
 "src/recovery/live/race_page.py" = ["E501"]
 "src/recovery/live/results_page.py" = ["E501"]
 "src/recovery/live/casestudy_page.py" = ["E501"]
+"src/recovery/live/liveproof_page.py" = ["E501"]
 # RUF001: R2 is a negative result and renders with a real minus sign, which
 # a hyphen does not read as at display size.
 "src/recovery/live/results.py" = ["RUF001"]

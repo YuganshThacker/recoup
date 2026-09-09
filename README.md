@@ -35,12 +35,29 @@ moved results *against* the model: **[docs/RESULTS.md](docs/RESULTS.md)**
 | **downtime feed** — 13 live outages, real bank codes, driving a real policy gate | which case hits which outage |
 | webhook HMAC verification, forgery rejection, replay dedupe | customer payment behaviour |
 | every model call — 508 real proposals in the committed audit report | inbound delivery (no public URL) |
+| **one full recovery, end to end** — a real failed payment and a real captured one on the same order | the 900-case batch behind R1 |
 
 Razorpay's test-mode charge is a dashboard button and **Subscriptions is not
 enabled on this account** (`/v1/subscriptions` → 401), so the real path cannot
 produce a batch of the size statistics need. The boundary is enforced in code:
 `RazorpayGateway.charge()` **refuses** rather than substituting a payment link
 and calling it a debit.
+
+### Two proofs, kept apart
+
+| | question | evidence |
+|---|---|---|
+| **experimental** | Does the recovery strategy work? | R1/R2/R3 — controlled, simulated, reproducible |
+| **execution** | Can it operate against real payment infrastructure? | one real Razorpay order, `n = 1` |
+
+`/proof` shows the second: a real payment failed with
+`international_transaction_not_allowed` — **a code not in our registry** — which
+the taxonomy classified UNKNOWN and the policy engine refused to retry, and a
+real captured payment on the same order id. Every figure there is confirmed by
+Razorpay.
+
+The two never merge. R1's ₹1,08,422 is a modelled figure; putting a real
+`payment_id` beside it would turn a simulated result into an implied cash claim.
 
 ## How it works
 

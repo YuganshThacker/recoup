@@ -1,0 +1,53 @@
+{
+  "_source": "captured from the live Razorpay test-mode API on 2026-09-09; a real failed card payment and a real captured netbanking payment on one order",
+  "link": {
+    "amount": 9900,
+    "amount_paid": 9900,
+    "currency": "INR",
+    "description": "Recovery for live_006",
+    "id": "plink_TTjB5o70U7NChL",
+    "order_id": "order_TZnd73R2UVEcRE",
+    "payments": [
+      {
+        "amount": 9900,
+        "created_at": 1788926856,
+        "method": "netbanking",
+        "payment_id": "pay_TZnhafQGqOSMU6",
+        "status": "captured"
+      }
+    ],
+    "reference_id": "recovery-6a8c9fae-live_006",
+    "short_url": "https://rzp.io/rzp/KxBNCAR",
+    "status": "paid"
+  },
+  "payments": {
+    "count": 2,
+    "entity": "collection",
+    "items": [
+      {
+        "amount": 9900,
+        "captured": true,
+        "created_at": 1788926849,
+        "error_code": null,
+        "error_description": null,
+        "error_reason": null,
+        "id": "pay_TZnhafQGqOSMU6",
+        "method": "netbanking",
+        "order_id": "order_TZnd73R2UVEcRE",
+        "status": "captured"
+      },
+      {
+        "amount": 9900,
+        "captured": false,
+        "created_at": 1788926705,
+        "error_code": "BAD_REQUEST_ERROR",
+        "error_description": "Your payment could not be completed as this business accepts domestic (Indian) card payments only. Try another payment method.",
+        "error_reason": "international_transaction_not_allowed",
+        "id": "pay_TZnf3gmB3xYMPt",
+        "method": "card",
+        "order_id": "order_TZnd73R2UVEcRE",
+        "status": "failed"
+      }
+    ]
+  }
+}

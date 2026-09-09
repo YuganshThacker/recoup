@@ -29,6 +29,8 @@ from recovery.live.console import render_console
 from recovery.live.demo import DEMO_SEED, DemoClient
 from recovery.live.downtime import DowntimeSource
 from recovery.live.hero import MEDIA_TYPES, find_hero_media, render_hero
+from recovery.live.liveproof import proof_from_env
+from recovery.live.liveproof_page import render_proof
 from recovery.live.race_page import render_race
 from recovery.live.redteam import UnknownAttack, catalogue, run_attack
 from recovery.live.replay import find_divergent_cases, replay_case
@@ -425,6 +427,12 @@ def build_router(room: ControlRoom) -> Router:
             range_header=request.header("Range"),
         )
 
+    def proof(request: Request, **_params: str) -> Response:
+        return html_response(render_proof(proof_from_env(link_id=request.query.get("link"))))
+
+    def proof_data(request: Request, **_params: str) -> Response:
+        return json_response(proof_from_env(link_id=request.query.get("link")).payload())
+
     def case_study(_request: Request, **_params: str) -> Response:
         return html_response(render_case_study(build_case_study()))
 
@@ -489,6 +497,8 @@ def build_router(room: ControlRoom) -> Router:
     router.get("/api/case/<case_id>", case)
     router.get("/case/<case_id>/xray", xray)
     router.get("/api/downtime", downtime)
+    router.get("/proof", proof)
+    router.get("/api/proof", proof_data)
     router.get("/case-study", case_study)
     router.get("/api/case-study", case_study_data)
     router.get("/results", results)
