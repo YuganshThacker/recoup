@@ -1,6 +1,6 @@
 # Architecture
 
-11,870 lines of source, 4,380 of tests, 396 tests, mypy strict clean.
+11,870 lines of source, 4,380 of tests, 495 tests, mypy strict clean.
 
 This document explains what the system does, why each significant decision was
 made, and what was rejected on the way. Where a decision is contestable it says
