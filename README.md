@@ -146,8 +146,8 @@ existed**.
 ## Running it
 
 ```bash
-python -m pytest -q                          # 396 tests
-python -m mypy src/                          # strict, 57 files
+python -m pytest -q                          # 495 tests
+python -m mypy src/                          # strict, 66 files
 python -m recovery.batch                     # rules only, no dependencies
 
 pip install -e ".[openai]" && export OPENAI_API_KEY=...
